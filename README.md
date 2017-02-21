@@ -12,7 +12,7 @@
 
 1. You need to sign up with a valid username and email: http://home.openweathermap.org/users/sign_up
 
-2. Get an API from this link, the basic free API works. You might want to chose another offer: http://openweathermap.org/api.
+2. Get an API from [this](http://openweathermap.org/api) link, the basic free API works. You might want to chose another existing offer.
 The API key might take several minutes before it becomes valid. To test it, check that you get weather information for Marrakesh when visiting this link:
 http://api.openweathermap.org/data/2.5/forecast/city?id=2542997&APPID=<YOUR_API_KEY_HERE>
 
