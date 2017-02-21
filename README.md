@@ -8,6 +8,8 @@
 
 * **OpenWeatherMap** for the weather data. You must get an API key [here](http://openweathermap.org/API).
 
+* **jq** is used to process the weather data in JSON format. You can download it [here](http://stedolan.github.io/jq/download) depending on your Linux distro.
+
 ## Getting and using an API key from OpenWeatherMap
 
 1. You need to sign up with a valid username and email: http://home.openweathermap.org/users/sign_up
@@ -28,7 +30,7 @@ The list of city IDs can be found [here](http://www.openweathermap.org/help/city
 
 ## Usage 
 
-`./wtspeak <arguments to be defined>`
+`wtspeak <arguments to be defined>`
 
 ## Licence
 
