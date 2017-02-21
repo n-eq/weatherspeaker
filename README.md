@@ -8,7 +8,7 @@
 
 * **OpenWeatherMap** for the weather data. You must get an API key [here](http://openweathermap.org/API).
 
-* **jq** is used to process the weather data in JSON format. You can download it [here](http://stedolan.github.io/jq/download) depending on your Linux distro.
+* **jq** is a lightweight command-line JSON processor. You can download it [here](http://stedolan.github.io/jq/download) depending on your Linux distro.
 
 ## Getting and using an API key from OpenWeatherMap
 
@@ -16,7 +16,7 @@
 
 2. Get an API from [this](http://openweathermap.org/api) link, the basic free API works. You might want to chose another existing offer.
 The API key might take several minutes before it becomes valid. To test it, check that you get weather information for Marrakesh when visiting this link:
-http://api.openweathermap.org/data/2.5/forecast/city?id=2542997&APPID=<YOUR_API_KEY_HERE>
+`http://api.openweathermap.org/data/2.5/forecast/city?id=2542997&APPID=<YOUR_API_KEY_HERE>`
 
 ### Setting environment
 
