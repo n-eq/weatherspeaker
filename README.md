@@ -36,10 +36,8 @@ The list of city IDs can be found [here](http://www.openweathermap.org/help/city
 
 You can cron this job to run periodically, e.g.:
 
-`
-# Runs weatherspeaker every day at 10 p.m.
-0 22 * * * /path/to/weatherspeaker.sh >> /path/to/weatherspeaker.log 2>&1
-`
+` # Runs weatherspeaker every day at 10 p.m.
+0 22 * * * /path/to/weatherspeaker.sh >> /path/to/weatherspeaker.log 2>&1`
 
 ## Licence
 
