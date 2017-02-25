@@ -22,15 +22,24 @@ The API key might take several minutes before it becomes valid. To test it, chec
 
 You must export these environment variables:
 
-`export OPENWEATHERMAP_APIKEY = <YOUR_API_KEY>`
+`export OPENWEATHERMAP_APIKEY=<YOUR_API_KEY>`
 
-`export WTSPEAK_DEFAULT_CITY_ID = <DEFAULT_CITY_ID>` 
+`export WTSPEAK_DEFAULT_CITY_ID=<DEFAULT_CITY_ID>` 
 
 The list of city IDs can be found [here](http://www.openweathermap.org/help/city_list.txt).
 
 ## Usage 
 
 `wtspeak <arguments to be defined>`
+
+## Cron
+
+You can cron this job to run periodically, e.g.:
+
+`
+# Runs weatherspeaker every day at 10 p.m.
+0 22 * * * /path/to/weatherspeaker.sh >> /path/to/weatherspeaker.log 2>&1
+`
 
 ## Licence
 
