@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+#
+# author: marrakchino <nabilelqatib@gmail.com>
+# version: 1.0, 02/2017
+
+# Exit if the environment variables are not defined
+[ -z "$OPENWEATHERMAP_APIKEY" ] && echo "API Key not defined" && exit 1;
+[ -z "$WTSPEAK_DEFAULT_CITY_ID" ] && echo "Default city ID not defined" && exit 1;
+
+ESPEAK=espeak
+
+# Note: '&units=metric' is used in order to get temperatures in Celsius (in Kelvin by default)
+WEATHER_URL="http://api.openweathermap.org/data/2.5/forecast/city?id=$WTSPEAK_DEFAULT_CITY_ID\
+	&APPID=$OPENWEATHERMAP_APIKEY&units=metric"
+
+# Potential values of the field weather[].main
+# see: http://openweathermap.org/weather-conditions
+WEATHER_MAIN=(
+	'Clear'
+	'Rain'
+	'Snow'
+	'Thunderstorm'
+	'Drizzle'
+	'Clouds'
+	'Atmosphere'
+	'Extreme'
+)
+
+# Groups: 2xx, 3xx, 4xx, 5xx, 6xx, 7xx
+# see: http://openweathermap.org/weather-conditions
+weather_condition_id=000
+current_hour_of_the_day=$(date +%H)
+
+# (The following expression could be a nominee for the most parenthesized expression award).
+# The data fetched from OpenWeatherMap contains weather information
+# for every 3 coming hours. Which means, if you fore example make a request
+# at 7pm, you'll get weather data for 21:00, 00:00, 03:00, 06:00, ... and so on
+# for approximately 5 days (35 entries). Every day is therefore divided into
+# 8 intervals of 3 hours (0-3-6-9-12-15-17-18-21-24).
+day_interval=$((((((($current_hour_of_the_day) * 7)) / 24)) + 1))
+
+if [ "$current_hour_of_the_day" -ge 12 ]; then
+	afternoon=0
+else
+	afternoon=1
+fi
+weather_forecast_script=""
+
+
+display_usage(){
+	echo "Usage:"
+	echo " $0 ... "
+
+	exit 0
+
+}
+
+# Fetch weather from openweathermap
+# $1 day offset: 0 means today, 1 tomorrow... etc
+curl_weather(){
+	day_offset="$1"
+	weather_main_description=$(curl -s "$WEATHER_URL"|
+	jq ".list[((11 - $day_offset))]| .weather[] .main")
+	
+	weather_full_description=$(curl -s "$WEATHER_URL"| 
+	jq ".list[$((11 - $day_offset))]| .weather[] .description")
+}
+
+curl_weather 1
+
+#TODO: customize the weather forecast script depending on the weather description
+echo "Tomorrow, the day will be $weather_full_description" |espeak &

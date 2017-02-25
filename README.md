@@ -32,7 +32,7 @@ The list of city IDs can be found [here](http://www.openweathermap.org/help/city
 
 `wtspeak <arguments to be defined>`
 
-## Cron
+# Cron
 
 You can cron this job to run periodically, e.g.:
 
