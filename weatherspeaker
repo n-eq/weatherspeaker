@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
-#
-# author: marrakchino <nabilelqatib@gmail.com>
-# version: 1.0, 02/2017
+
 
 # Exit if the environment variables are not defined
 # TODO: Prompt the user for the API key and defaut city id/city name if the 
@@ -48,19 +46,32 @@ else
 	afternoon=1
 fi
 
+# Command line parsing
 while (( "$#" )); do
 	case "$1" in
-		--trace| --verbose| -v)
+		--trace| --verbose)
 			trace='set -x'
 			shift 1 || break
 			;;
-		--d)
+			
+		--day| -d)
 			day_offset="$2"
 			# error handling will be function-driven
-			shift 2 ||break
+			shift 2 || break
 			;;
-		
-	
+			
+		--help| -h)
+			display_usage
+			;;
+			
+		--version| -v)
+			display_version
+			;;
+			
+		init)
+			shift 1 || break
+			;;
+			
 	esac 
 done
 
