@@ -8,7 +8,7 @@
 
 * **OpenWeatherMap** for the weather data. You must get an API key [here](http://openweathermap.org/API).
 
-* **jq** is a lightweight command-line JSON processor. You can download it [here](http://stedolan.github.io/jq/download) depending on your Linux distro.
+* **jq** is an opensource lightweight command-line JSON processor. You can download it [here](http://stedolan.github.io/jq/download) depending on your Linux distro.
 
 ## Getting and using an API key from OpenWeatherMap
 
@@ -28,9 +28,16 @@ You must export these environment variables:
 
 The list of city IDs can be found [here](http://www.openweathermap.org/help/city_list.txt).
 
-## Usage 
+# Configuration
 
-`wtspeak <arguments to be defined>`
+## Via init
+
+```weatherspeaker init`
+
+# Usage 
+
+`$ weatherspeaker --help 
+TODO`
 
 # Cron
 
@@ -38,9 +45,9 @@ You can cron this job to run periodically, e.g.:
 
 ```sh
 # Runs weatherspeaker every day at 10 p.m.
-0 22 * * * /path/to/weatherspeaker.sh >> /path/to/weatherspeaker.log 2>&1
+0 22 * * * weatherspeaker >> /path/to/weatherspeaker.log 2>&1
 ```
 
 ## Licence
 
-**WeatherSpeaker** ~~is~~  will be released  under the MIT licence, see `LICENCE` file for more details.
+**WeatherSpeaker** is be released  under the MIT licence, see `LICENCE` file for more details.
