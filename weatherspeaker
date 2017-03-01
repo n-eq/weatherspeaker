@@ -4,8 +4,12 @@
 # version: 1.0, 02/2017
 
 # Exit if the environment variables are not defined
-[ -z "$OPENWEATHERMAP_APIKEY" ] && echo "API Key not defined" && exit 1;
+# TODO: Prompt the user for the API key and defaut city id/city name if the 
+# environment variables are not defined
+[ -z "$OPENWEATHERMAP_APIKEY" ] && echo "API Key not defined" && exit 1; 
+# read -e -p 'Enter your OpenWeatherMap API key: ' "$OPENWEATHERMAP_APIKEY"
 [ -z "$WTSPEAK_DEFAULT_CITY_ID" ] && echo "Default city ID not defined" && exit 1;
+
 
 ESPEAK=espeak
 
@@ -38,18 +42,38 @@ current_hour_of_the_day=$(date +%H)
 # for approximately 5 days (35 entries). Every day is therefore divided into
 # 8 intervals of 3 hours (0-3-6-9-12-15-17-18-21-24).
 day_interval=$((((((($current_hour_of_the_day) * 7)) / 24)) + 1))
-
 if [ "$current_hour_of_the_day" -ge 12 ]; then
 	afternoon=0
 else
 	afternoon=1
 fi
+
+while (( "$#" )); do
+	case "$1" in
+		--trace| --verbose| -v)
+			trace='set -x'
+			shift 1 || break
+			;;
+		--d)
+			day_offset="$2"
+			# error handling will be function-driven
+			shift 2 ||break
+			;;
+		
+	
+	esac 
+done
+
+"$trace"
+
 weather_forecast_script=""
 
 
 display_usage(){
 	echo "Usage:"
-	echo " $0 ... "
+	echo " $0 "
+	echo "[--trace|--verbose|-v]  "
+	echo " "
 
 	exit 0
 
