@@ -32,7 +32,7 @@ The list of city IDs can be found [here](http://www.openweathermap.org/help/city
 
 ## Via init
 
-```weatherspeaker init`
+`weatherspeaker init`
 
 # Usage 
 
