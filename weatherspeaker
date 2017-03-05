@@ -1,5 +1,18 @@
 #!/usr/bin/env bash
 
+display_usage(){
+	echo "Usage:"
+	echo " weatherspeaker "
+	echo "    [--trace|--verbose]  "
+	echo " "
+	exit 0
+}
+
+display_version(){
+	echo "weatherspeaker - Version 1.0"
+	exit 0
+}
+
 
 # Exit if the environment variables are not defined
 # TODO: Prompt the user for the API key and defaut city id/city name if the 
@@ -12,8 +25,8 @@
 ESPEAK=espeak
 
 # Note: '&units=metric' is used in order to get temperatures in Celsius (in Kelvin by default)
-WEATHER_URL="http://api.openweathermap.org/data/2.5/forecast/city?id=$WTSPEAK_DEFAULT_CITY_ID\
-	&APPID=$OPENWEATHERMAP_APIKEY&units=metric"
+WEATHER_URL="http://api.openweathermap.org/data/2.5/forecast/city?\
+	id=$WTSPEAK_DEFAULT_CITY_ID&APPID=$OPENWEATHERMAP_APIKEY&units=metric"
 
 # Potential values of the field weather[].main
 # see: http://openweathermap.org/weather-conditions
@@ -46,62 +59,74 @@ else
 	afternoon=1
 fi
 
+trace=0
 # Command line parsing
-while (( "$#" )); do
-	case "$1" in
-		--trace| --verbose)
-			trace='set -x'
-			shift 1 || break
-			;;
-			
-		--day| -d)
-			day_offset="$2"
-			# error handling will be function-driven
-			shift 2 || break
-			;;
-			
-		--help| -h)
-			display_usage
-			;;
-			
-		--version| -v)
-			display_version
-			;;
-			
-		init)
-			shift 1 || break
-			;;
-			
-	esac 
-done
+# while (( "$#" )); do
+# 	case "$1" in
+# 		--trace| --verbose)
+# 			trace=1
+# 			shift 1 || break
+# 			;;
+# 			
+# 		--day| -d)
+# 			day_offset="$2"
+# 			# error handling will be function-driven
+# 			shift 2 || break
+# 			;;
+# 			
+# 		--help| -h)
+# 			display_usage
+# 			;;
+# 			
+# 		--version| -v)
+# 			display_version
+# 			;;
+# 			
+# 		init)
+# 			shift 1 || break
+# 			;;
+# 		*)
+# 			shift 1 || break
+# 			;;
+# 			
+# 	esac 
+# done
 
-"$trace"
+if [ "$trace" -eq 1 ]; then
+	set -x
+fi
 
 weather_forecast_script=""
+if [ "$afternoon" -gt 0 ]; then
+	weather_forecast_script="This afternoon, the weather will be "
+else 
+	weather_forecast_script="Tomorrow, the weather will be "
+fi
 
+# beautify_description(){
+# 
+# }
 
-display_usage(){
-	echo "Usage:"
-	echo " $0 "
-	echo "[--trace|--verbose|-v]  "
-	echo " "
-
-	exit 0
-
-}
 
 # Fetch weather from openweathermap
 # $1 day offset: 0 means today, 1 tomorrow... etc
 curl_weather(){
 	day_offset="$1"
+	curl -s "$WEATHER_URL"
 	weather_main_description=$(curl -s "$WEATHER_URL"|
 	jq ".list[((11 - $day_offset))]| .weather[] .main")
+	echo "weather_main_description: $weather_main_description"
 	
 	weather_full_description=$(curl -s "$WEATHER_URL"| 
 	jq ".list[$((11 - $day_offset))]| .weather[] .description")
+	echo "weather_full_description: $weather_full_description"
 }
 
-curl_weather 1
+if [ "$1" == "-d" ]; then
+	curl_weather "$2"
+else 
+	curl_weather 1
+fi
 
-#TODO: customize the weather forecast script depending on the weather description
-echo "Tomorrow, the day will be $weather_full_description" |espeak &
+echo "weather_url=$WEATHER_URL"
+echo "$weather_forecast_script $weather_main_description"| espeak &
