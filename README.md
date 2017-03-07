@@ -50,4 +50,4 @@ You can cron this job to run periodically, e.g.:
 
 ## Licence
 
-**WeatherSpeaker** is be released  under the MIT licence, see `LICENCE` file for more details.
+**WeatherSpeaker** is released  under the MIT licence, see `LICENCE` file for more details.
