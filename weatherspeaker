@@ -21,12 +21,11 @@ display_version(){
 # read -e -p 'Enter your OpenWeatherMap API key: ' "$OPENWEATHERMAP_APIKEY"
 [ -z "$WTSPEAK_DEFAULT_CITY_ID" ] && echo "Default city ID not defined" && exit 1;
 
-
 ESPEAK=espeak
+UNITS=metric
 
 # Note: '&units=metric' is used in order to get temperatures in Celsius (in Kelvin by default)
-WEATHER_URL="http://api.openweathermap.org/data/2.5/forecast/city?\
-	id=$WTSPEAK_DEFAULT_CITY_ID&APPID=$OPENWEATHERMAP_APIKEY&units=metric"
+WEATHER_URL="http://api.openweathermap.org/data/2.5/forecast?id=$WTSPEAK_DEFAULT_CITY_ID&APPID=$OPENWEATHERMAP_APIKEY&units=$UNITS"
 
 # Potential values of the field weather[].main
 # see: http://openweathermap.org/weather-conditions
@@ -103,30 +102,69 @@ else
 	weather_forecast_script="Tomorrow, the weather will be "
 fi
 
-# beautify_description(){
+# Thsi function adds an adjective succinctly describing the weather
+adjectify_description(){
+	# it's possible to use if/else on the resulting code id 
+# 	if [ "$weather_code" == "\"200\"" ]; then
 # 
-# }
+# 	elif [ "$weather_code" == "\"300\"" ]; then
+# 
+# 	elif [ "$weather_code" == "\"400\"" ]; then
+# 
+# 	elif [ "$weather_code" == "\"500\"" ]; then
+# 
+# 	elif [ "$weather_code" == "\"600\"" ]; then
+# 
+# 	elif [ "$weather_code" == "\"700\"" ]; then
+# 
+# 	else
+# 
+# 	fi
+	if [ "$weather_main_description" == "\"Clear\"" ]; then
+		weather_forecast_script="$weather_forecast_script clear."
+
+	elif [ "$weather_main_description" == "\"Rain\"" ]; then
+		weather_forecast_script="$weather_forecast_script rainy."
+
+	elif [ "$weather_main_description" == "\"Snow\"" ]; then
+		weather_forecast_script="$weather_forecast_script snowy."
+
+	elif [ "$weather_main_description" == "\"Thunderstorm\"" ]; then
+		weather_forecast_script="$weather_forecast_script stormy."
+	
+	elif [ "$weather_main_description" == "\"Drizzle\"" ]; then
+		weather_forecast_script="$weather_forecast_script drizzly."
+	
+	elif [ "$weather_main_description" == "\"Clouds\"" ]; then
+		weather_forecast_script="$weather_forecast_script cloudy."
+	
+	elif [ "$weather_main_description" == "\"Atmosphere\"" ]; then
+		weather_forecast_script="$weather_forecast_script atmospheric."
+	
+	elif [ "$weather_main_description" == "\"Extreme\"" ]; then
+		weather_forecast_script="$weather_forecast_script extreme."
+	else
+		echo "error"
+	fi
+}
 
 
 # Fetch weather from openweathermap
 # $1 day offset: 0 means today, 1 tomorrow... etc
+# TODO: factorize the calls to curl hereafter
 curl_weather(){
 	day_offset="$1"
-	curl -s "$WEATHER_URL"
 	weather_main_description=$(curl -s "$WEATHER_URL"|
 	jq ".list[((11 - $day_offset))]| .weather[] .main")
-	echo "weather_main_description: $weather_main_description"
+# 	echo "weather_main: $weather_main_description"
 	
-	weather_full_description=$(curl -s "$WEATHER_URL"| 
+	weather_full_description=$(curl -s "$WEATHER_URL"|
 	jq ".list[$((11 - $day_offset))]| .weather[] .description")
-	echo "weather_full_description: $weather_full_description"
+	echo "weather_full: $weather_full_description"
+	
+	weather_code=$(curl -s "$WEATHER_URL"| jq '.cod')
 }
 
-if [ "$1" == "-d" ]; then
-	curl_weather "$2"
-else 
-	curl_weather 1
-fi
-
-echo "weather_url=$WEATHER_URL"
-echo "$weather_forecast_script $weather_main_description"| espeak &
+curl_weather 1
+adjectify_description
+echo "$weather_forecast_script"| "$ESPEAK" &
