@@ -13,7 +13,6 @@ display_version(){
 	exit 0
 }
 
-
 # Exit if the environment variables are not defined
 # TODO: Prompt the user for the API key and defaut city id/city name if the 
 # environment variables are not defined
@@ -22,9 +21,8 @@ display_version(){
 [ -z "$WTSPEAK_DEFAULT_CITY_ID" ] && echo "Default city ID not defined" && exit 1;
 
 ESPEAK=espeak
-UNITS=metric
+UNITS=metric # Default:Kelvin, Metric:Celsius, Imperial:Fahrenheit
 
-# Note: '&units=metric' is used in order to get temperatures in Celsius (in Kelvin by default)
 WEATHER_URL="http://api.openweathermap.org/data/2.5/forecast?id=$WTSPEAK_DEFAULT_CITY_ID&APPID=$OPENWEATHERMAP_APIKEY&units=$UNITS"
 
 # Potential values of the field weather[].main
@@ -40,9 +38,6 @@ WEATHER_MAIN=(
 	'Extreme'
 )
 
-# Groups: 2xx, 3xx, 4xx, 5xx, 6xx, 7xx
-# see: http://openweathermap.org/weather-conditions
-weather_condition_id=000
 current_hour_of_the_day=$(date +%H)
 
 # (The following expression could be a nominee for the most parenthesized expression award).
