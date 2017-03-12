@@ -46,49 +46,45 @@ current_hour_of_the_day=$(date +%H)
 # at 7pm, you'll get weather data for 21:00, 00:00, 03:00, 06:00, ... and so on
 # for approximately 5 days (35 entries). Every day is therefore divided into
 # 8 intervals of 3 hours (0-3-6-9-12-15-17-18-21-24).
-day_interval=$((((((($current_hour_of_the_day) * 7)) / 24)) + 1))
+day_interval=$((((((($current_hour_of_the_day) * 7)) / 24)) + 2))
 if [ "$current_hour_of_the_day" -ge 12 ]; then
 	afternoon=0
 else
 	afternoon=1
 fi
 
-trace=0
 # Command line parsing
-# while (( "$#" )); do
-# 	case "$1" in
-# 		--trace| --verbose)
-# 			trace=1
-# 			shift 1 || break
-# 			;;
-# 			
-# 		--day| -d)
-# 			day_offset="$2"
-# 			# error handling will be function-driven
-# 			shift 2 || break
-# 			;;
-# 			
-# 		--help| -h)
-# 			display_usage
-# 			;;
-# 			
-# 		--version| -v)
-# 			display_version
-# 			;;
-# 			
-# 		init)
-# 			shift 1 || break
-# 			;;
-# 		*)
-# 			shift 1 || break
-# 			;;
-# 			
-# 	esac 
-# done
+while (( "$#" )); do
+	case "$1" in
+		--trace| --verbose)
+			set -x
+			shift 1 || break
+			;;
+			
+		--day| -d)
+			day_offset="$2"
+			# error handling will be function-driven
+			shift 2 || break
+			;;
+			
+		--help| -h)
+			display_usage
+			;;
+			
+		--version| -v)
+			display_version
+			;;
+			
+		init)
+			shift 1 || break
+			;;
 
-if [ "$trace" -eq 1 ]; then
-	set -x
-fi
+		*)
+			shift 1 || break
+			;;
+			
+	esac
+done
 
 weather_forecast_script=""
 if [ "$afternoon" -gt 0 ]; then
@@ -97,58 +93,49 @@ else
 	weather_forecast_script="Tomorrow, the weather will be "
 fi
 
-# Thsi function adds an adjective succinctly describing the weather
+# This function adds an adjective succinctly describing the weather
+# it's possible to use if/else on the resulting code id 
 adjectify_description(){
-	# it's possible to use if/else on the resulting code id 
-# 	if [ "$weather_code" == "\"200\"" ]; then
-# 
-# 	elif [ "$weather_code" == "\"300\"" ]; then
-# 
-# 	elif [ "$weather_code" == "\"400\"" ]; then
-# 
-# 	elif [ "$weather_code" == "\"500\"" ]; then
-# 
-# 	elif [ "$weather_code" == "\"600\"" ]; then
-# 
-# 	elif [ "$weather_code" == "\"700\"" ]; then
-# 
-# 	else
-# 
-# 	fi
-	if [ "$weather_main_description" == "\"Clear\"" ]; then
+	# remove the double-quotes
+	weather_main_description="${weather_main_description//\"}"
+
+	if [ "$weather_main_description" == "Clear" ]; then
 		weather_forecast_script="$weather_forecast_script clear."
 
-	elif [ "$weather_main_description" == "\"Rain\"" ]; then
+	elif [ "$weather_main_description" == "Rain" ]; then
 		weather_forecast_script="$weather_forecast_script rainy."
 
-	elif [ "$weather_main_description" == "\"Snow\"" ]; then
+	elif [ "$weather_main_description" == "Snow" ]; then
 		weather_forecast_script="$weather_forecast_script snowy."
 
-	elif [ "$weather_main_description" == "\"Thunderstorm\"" ]; then
+	elif [ "$weather_main_description" == "Thunderstorm" ]; then
 		weather_forecast_script="$weather_forecast_script stormy."
 	
-	elif [ "$weather_main_description" == "\"Drizzle\"" ]; then
+	elif [ "$weather_main_description" == "Drizzle" ]; then
 		weather_forecast_script="$weather_forecast_script drizzly."
 	
-	elif [ "$weather_main_description" == "\"Clouds\"" ]; then
+	elif [ "$weather_main_description" == "Clouds" ]; then
 		weather_forecast_script="$weather_forecast_script cloudy."
 	
-	elif [ "$weather_main_description" == "\"Atmosphere\"" ]; then
+	elif [ "$weather_main_description" == "Atmosphere" ]; then
 		weather_forecast_script="$weather_forecast_script atmospheric."
 	
-	elif [ "$weather_main_description" == "\"Extreme\"" ]; then
+	elif [ "$weather_main_description" == "Extreme" ]; then
 		weather_forecast_script="$weather_forecast_script extreme."
-	else
-		echo "error"
 	fi
 }
 
+temperaturify_description(){
+	weather_forecast_script="$weather_forecast_script Temperatures will\
+		range from $weather_morning_temp degrees in the morning to $weather_afternoon_temp degrees in the afternoon."
+}
 
 # Fetch weather from openweathermap
 # $1 day offset: 0 means today, 1 tomorrow... etc
 # TODO: factorize the calls to curl hereafter
 curl_weather(){
-	day_offset="$1"
+	day_offset="$day_interval"
+# 	day_offset="$1"
 	weather_main_description=$(curl -s "$WEATHER_URL"|
 	jq ".list[((11 - $day_offset))]| .weather[] .main")
 	
@@ -156,8 +143,16 @@ curl_weather(){
 	jq ".list[$((11 - $day_offset))]| .weather[] .description")
 	
 	weather_code=$(curl -s "$WEATHER_URL"| jq '.cod')
+
+	weather_morning_temp=$(curl -s "$WEATHER_URL"|
+	jq ".list[((11 - $day_offset))]| .main.temp")
+
+	weather_afternoon_temp=$(curl -s "$WEATHER_URL"|
+	jq ".list[((11 - $day_offset + 2))]| .main.temp")
+
 }
 
 curl_weather 1
 adjectify_description
-echo "$weather_forecast_script"| "$ESPEAK" &
+temperaturify_description
+$ESPEAK -v female_custom_voice "$weather_forecast_script"
