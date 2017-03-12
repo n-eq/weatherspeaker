@@ -21,6 +21,12 @@ display_version(){
 [ -z "$WTSPEAK_DEFAULT_CITY_ID" ] && echo "Default city ID not defined" && exit 1;
 
 ESPEAK=espeak
+# making assumptions...
+# TODO: fix this
+if [ -f "/usr/lib/x86_64-linux-gnu/espeak-data/voices/female_custom_voices" ]; then
+	ESPEAk="$ESPEAK -v female_custom_voice"
+fi
+
 UNITS=metric # Default:Kelvin, Metric:Celsius, Imperial:Fahrenheit
 
 WEATHER_URL="http://api.openweathermap.org/data/2.5/forecast?id=$WTSPEAK_DEFAULT_CITY_ID&APPID=$OPENWEATHERMAP_APIKEY&units=$UNITS"
@@ -61,11 +67,10 @@ while (( "$#" )); do
 			shift 1 || break
 			;;
 			
-		--day| -d)
-			day_offset="$2"
-			# error handling will be function-driven
-			shift 2 || break
-			;;
+# 		--day| -d)
+# 			day_offset="$2"
+# 			shift 2 || break
+# 			;;
 			
 		--help| -h)
 			display_usage
@@ -75,9 +80,9 @@ while (( "$#" )); do
 			display_version
 			;;
 			
-		init)
-			shift 1 || break
-			;;
+# 		init)
+# 			shift 1 || break
+# 			;;
 
 		*)
 			shift 1 || break
@@ -127,7 +132,8 @@ adjectify_description(){
 
 temperaturify_description(){
 	weather_forecast_script="$weather_forecast_script Temperatures will\
-		range from $weather_morning_temp degrees in the morning to $weather_afternoon_temp degrees in the afternoon."
+	range from $weather_morning_temp degrees in the morning to\
+	$weather_afternoon_temp degrees in the afternoon."
 }
 
 # Fetch weather from openweathermap
@@ -155,4 +161,4 @@ curl_weather(){
 curl_weather 1
 adjectify_description
 temperaturify_description
-$ESPEAK -v female_custom_voice "$weather_forecast_script"
+$ESPEAK "$weather_forecast_script"
