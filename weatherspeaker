@@ -151,11 +151,9 @@ curl_weather(){
 	day_offset="$1"
 	weather_main_description=$(curl -s "$WEATHER_URL"|
 	jq ".list[((11 - $day_offset))]| .weather[] .main")
-# 	echo "weather_main: $weather_main_description"
 	
 	weather_full_description=$(curl -s "$WEATHER_URL"|
 	jq ".list[$((11 - $day_offset))]| .weather[] .description")
-	echo "weather_full: $weather_full_description"
 	
 	weather_code=$(curl -s "$WEATHER_URL"| jq '.cod')
 }
