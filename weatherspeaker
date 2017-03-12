@@ -23,8 +23,8 @@ display_version(){
 ESPEAK=espeak
 # making assumptions...
 # TODO: fix this
-if [ -f "/usr/lib/x86_64-linux-gnu/espeak-data/voices/female_custom_voices" ]; then
-	ESPEAk="$ESPEAK -v female_custom_voice"
+if [ -f "/usr/lib/x86_64-linux-gnu/espeak-data/voices/female_custom_voice" ]; then
+	ESPEAK="$ESPEAK -v female_custom_voice"
 fi
 
 UNITS=metric # Default:Kelvin, Metric:Celsius, Imperial:Fahrenheit
@@ -161,4 +161,4 @@ curl_weather(){
 curl_weather 1
 adjectify_description
 temperaturify_description
-$ESPEAK "$weather_forecast_script"
+$ESPEAK "$weather_forecast_script" &
