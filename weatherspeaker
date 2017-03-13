@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
 display_usage(){
-	echo "Usage:"
-	echo " weatherspeaker "
-	echo "    [--trace|--verbose]  "
+	echo "Weatherspeaker - Command line weather forecast speaker"
+	echo "Options:"
+	echo "    [--trace | --verbose]: "
+	echo "    [--help | -h]"
 	echo " "
 	exit 0
 }
@@ -13,12 +14,6 @@ display_version(){
 	exit 0
 }
 
-# Exit if the environment variables are not defined
-# TODO: Prompt the user for the API key and defaut city id/city name if the 
-# environment variables are not defined
-[ -z "$OPENWEATHERMAP_APIKEY" ] && echo "API Key not defined" && exit 1; 
-# read -e -p 'Enter your OpenWeatherMap API key: ' "$OPENWEATHERMAP_APIKEY"
-[ -z "$WTSPEAK_DEFAULT_CITY_ID" ] && echo "Default city ID not defined" && exit 1;
 
 ESPEAK=espeak
 # making assumptions...
@@ -90,6 +85,13 @@ while (( "$#" )); do
 			
 	esac
 done
+
+# Exit if the environment variables are not defined
+# TODO: Prompt the user for the API key and defaut city id/city name if the 
+# environment variables are not defined
+[ -z "$OPENWEATHERMAP_APIKEY" ] && echo "API Key not defined" && exit 1; 
+# read -e -p 'Enter your OpenWeatherMap API key: ' "$OPENWEATHERMAP_APIKEY"
+[ -z "$WTSPEAK_DEFAULT_CITY_ID" ] && echo "Default city ID not defined" && exit 1;
 
 weather_forecast_script=""
 if [ "$afternoon" -gt 0 ]; then
