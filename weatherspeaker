@@ -1,43 +1,27 @@
 #!/usr/bin/env bash
 
-display_usage(){
-	echo "Weatherspeaker - Command line weather forecast speaker"
-	echo "Options:"
-	echo "    [--trace | --verbose]: "
-	echo "    [--help | -h]"
-	echo " "
-	exit 0
-}
+HERE=$(cd "$(dirname "$0")" && pwd)
 
-display_version(){
-	echo "weatherspeaker - Version 1.0"
-	exit 0
-}
+if [ -f "$HERE/config/.openweathermap_apikey" ]; then
+	api_key=$(sed -n '1p' < "$HERE/config/.openweathermap_apikey")
+else
+	api_key="$OPENWEATHERMAP_APIKEY"
+fi
 
-
-ESPEAK=espeak
-# making assumptions...
-# TODO: fix this
-if [ -f "/usr/lib/x86_64-linux-gnu/espeak-data/voices/female_custom_voice" ]; then
-	ESPEAK="$ESPEAK -v female_custom_voice"
+if test -f "$HERE/config/.default_city_id"; then
+	city_id=$(sed -n '1p' < "$HERE/config/.default_city_id")
+else
+	city_id="$WTSPEAK_DEFAULT_CITY_ID"
 fi
 
 UNITS=metric # Default:Kelvin, Metric:Celsius, Imperial:Fahrenheit
+WEATHER_URL="http://api.openweathermap.org/data/2.5/forecast?id=$city_id&APPID=$api_key&units=$UNITS"
 
-WEATHER_URL="http://api.openweathermap.org/data/2.5/forecast?id=$WTSPEAK_DEFAULT_CITY_ID&APPID=$OPENWEATHERMAP_APIKEY&units=$UNITS"
-
-# Potential values of the field weather[].main
-# see: http://openweathermap.org/weather-conditions
-WEATHER_MAIN=(
-	'Clear'
-	'Rain'
-	'Snow'
-	'Thunderstorm'
-	'Drizzle'
-	'Clouds'
-	'Atmosphere'
-	'Extreme'
-)
+ESPEAK=espeak
+# making assumptions... TODO: fix this
+if [ -f "/usr/lib/x86_64-linux-gnu/espeak-data/voices/female_custom_voice" ]; then
+	ESPEAK="$ESPEAK -v female_custom_voice"
+fi
 
 current_hour_of_the_day=$(date +%H)
 
@@ -54,6 +38,44 @@ else
 	afternoon=1
 fi
 
+display_usage(){
+	echo "Weatherspeaker - Command line weather forecast speaker"
+	echo "Options:"
+	echo "    [--trace | --verbose]     Activate tracing."
+	echo "    [--help | -h]             Show this help and exit."
+	echo "    [--version | -v]          Display the version of the program and exit."
+	echo "    [init]                    Initialize and configure your personal parameters (API Key and city ID)."
+	echo "Github repository: 	    http://gihthub.com/marrakchino/weatherspeaker"
+	exit 0
+}
+
+display_version(){
+	echo "weatherspeaker - Version 1.0"
+	exit 0
+}
+
+init(){
+	echo "$api_key" > "$HERE/config/.openweathermap_apikey"
+	case "$?" in
+		0)
+			echo "[API Key] Done";;
+		*)
+			echo "[API Key] Error when writing"
+			return 1
+			;;
+	esac
+
+	echo "$city_id" > "$HERE/config/.default_city_id"
+	case "$?" in
+		0)
+			echo "[City ID] Done";;
+		*)
+			echo "[City ID] Error when writing"
+			return 1
+			;;
+	esac
+}
+
 # Command line parsing
 while (( "$#" )); do
 	case "$1" in
@@ -61,11 +83,6 @@ while (( "$#" )); do
 			set -x
 			shift 1 || break
 			;;
-			
-# 		--day| -d)
-# 			day_offset="$2"
-# 			shift 2 || break
-# 			;;
 			
 		--help| -h)
 			display_usage
@@ -75,9 +92,30 @@ while (( "$#" )); do
 			display_version
 			;;
 			
-# 		init)
-# 			shift 1 || break
-# 			;;
+		init)
+			if [ -f "$HERE/config/.openweathermap_apikey" ]; then
+				api_key=$(sed -n '1p' < "$HERE/config/.openweathermap_apikey")
+			else
+				api_key=$OPENWEATHERMAP_APIKEY
+			fi
+
+			if [[ -z "${api_key}" || "$api_key" == "$OPENWEATHERMAP_APIKEY" ]]; then 
+				echo "1"
+				read -e -p "Enter your API key: " api_key
+			fi
+
+			if [ -f "$HERE/config/.default_city_id" ]; then
+				city_id=$(sed -n '1p' < "$HERE/config/.default_city_id")
+			else
+				city_id="$WTSPEAK_DEFAULT_CITY_ID"
+			fi
+
+			if [[ -z "${city_id}" || "$city_id" == "$WTSPEAK_DEFAULT_CITY_ID" ]]; then 
+				read -e -p "Enter your city ID: " city_id
+			fi
+			init
+			exit $?
+			;;
 
 		*)
 			shift 1 || break
@@ -87,11 +125,12 @@ while (( "$#" )); do
 done
 
 # Exit if the environment variables are not defined
-# TODO: Prompt the user for the API key and defaut city id/city name if the 
+# TODO: Prompt the user for the API key and default city id/city name if the 
 # environment variables are not defined
-[ -z "$OPENWEATHERMAP_APIKEY" ] && echo "API Key not defined" && exit 1; 
-# read -e -p 'Enter your OpenWeatherMap API key: ' "$OPENWEATHERMAP_APIKEY"
-[ -z "$WTSPEAK_DEFAULT_CITY_ID" ] && echo "Default city ID not defined" && exit 1;
+# [ -z "$OPENWEATHERMAP_APIKEY" ] && echo "API Key not defined" && exit 1; 
+# [ -z "$api_key" ] && echo "API Key not defined" && exit 1; 
+# # read -e -p 'Enter your OpenWeatherMap API key: ' "$OPENWEATHERMAP_APIKEY"
+# [ -z "$WTSPEAK_DEFAULT_CITY_ID" ] && echo "Default city ID not defined" && exit 1;
 
 weather_forecast_script=""
 if [ "$afternoon" -gt 0 ]; then
@@ -136,6 +175,19 @@ temperaturify_description(){
 	weather_forecast_script="$weather_forecast_script Temperatures will\
 	range from $weather_morning_temp degrees in the morning to\
 	$weather_afternoon_temp degrees in the afternoon."
+}
+
+# returns the city coordinates based on the ip address
+# <latitude> <longitude>
+# (credits to http://askubuntu.com/a/430864)
+get_coordinates_from_ip(){
+	curl -s http://whatismycountry.com/ | sed -n 's/.*Coordinates \(.*\)<.*/\1/p'	
+}
+
+# returns the city and country name based on the ip adress
+# <city>,<country>
+get_city_country_from_ip(){
+	curl -s http://whatismycountry.com/ | sed -n 's|.*> *\(.*\)</h3>|\1|p'
 }
 
 # Fetch weather from openweathermap
