@@ -14,7 +14,7 @@
 
 * **jq** is an opensource lightweight command line JSON processor. You can download it [here](http://stedolan.github.io/jq/download) depending on your Linux distro.
 
-## Getting and using an API key from OpenWeatherMap
+## Getting and using an API key from OpenWeatherMap
 
 1. You need to sign up with a valid username and email: http://home.openweathermap.org/users/sign_up
 
@@ -22,7 +22,7 @@
 The API key might take several minutes before it becomes valid. To test it, check that you get weather information for Marrakesh when visiting this link:
 `http://api.openweathermap.org/data/2.5/forecast/city?id=2542997&APPID=<YOUR_API_KEY_HERE>`
 
-### Setting environment
+### Setting environment
 
 You must export these environment variables:
 
