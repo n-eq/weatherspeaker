@@ -100,7 +100,6 @@ while (( "$#" )); do
 			fi
 
 			if [[ -z "${api_key}" || "$api_key" == "$OPENWEATHERMAP_APIKEY" ]]; then 
-				echo "1"
 				read -e -p "Enter your API key: " api_key
 			fi
 
@@ -215,4 +214,8 @@ curl_weather(){
 curl_weather 1
 adjectify_description
 temperaturify_description
-$ESPEAK "$weather_forecast_script" &
+
+# Don't speak unless the information has been correctly fetched 
+if [[ -n "$weather_morning_temp" && -n "$weather_afternoon_temp" ]]; then
+	$ESPEAK "$weather_forecast_script" &
+fi
