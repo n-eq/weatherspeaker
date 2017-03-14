@@ -62,6 +62,6 @@ You can `cron` this job to run periodically, e.g.:
 0 22 * * * weatherspeaker >> /path/to/weatherspeaker.log 2>&1
 ```
 
-## Licence
+## Licence
 
 **WeatherSpeaker** is released  under the MIT licence, see `LICENCE` file for more details.
