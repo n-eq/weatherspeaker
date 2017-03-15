@@ -51,3 +51,9 @@ You can cron this job to run periodically, e.g.:
 ## Licence
 
 **WeatherSpeaker** is released  under the MIT licence, see `LICENCE` file for more details.
+
+# TODO
+
+* Check if there are any open [issues](http://github.com/marrakchino/weatherspeaker/issues) and see whether you can contribute by fixing them.
+
+* Use the functions `get_coordinates_from_ip` and `get_city_country_from_ip` to allow the user to use the program without explicitly specifying a city. See for example how you can extract the city ID number by knowing its name from: http://www.openweathermap.org/help/city_list.txt as the API is not performing well when only providing a city name.
