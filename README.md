@@ -1,16 +1,20 @@
 # WeatherSpeaker
+[![version](https://img.shields.io/badge/version-v1.0-red.svg)](https://github.com/marrakchino/weatherspeaker/releases)
+[![license](http://img.shields.io/badge/license-mit-blue.svg)](https://opensource.org/licenses/MIT)
 
-**WeatherSpeaker** is a command-line weather forecast speaker. It allows the user to hear the weather forecast of a particular location for a particular date.
+**WeatherSpeaker** | a command-line weather forecast speaker. It allows the user to hear the weather forecast of a particular location for a particular date
+
+
 
 ## Dependencies
 
-* **espeak** for the speech synthesis. You can download it [here](http://www.espeak.sourceforce.net).
+* **espeak** is a compact opensource software speech synthesizer for English and other languages. You can download it [here](http://www.espeak.sourceforce.net).
 
-* **OpenWeatherMap** for the weather data. You must get an API key [here](http://openweathermap.org/API).
+* **OpenWeatherMap** is an online service that provides weather data. You must get an API key [here](http://openweathermap.org/API).
 
-* **jq** is an opensource lightweight command-line JSON processor. You can download it [here](http://stedolan.github.io/jq/download) depending on your Linux distro.
+* **jq** is an opensource lightweight command line JSON processor. You can download it [here](http://stedolan.github.io/jq/download) depending on your Linux distro.
 
-## Getting and using an API key from OpenWeatherMap
+## Getting and using an API key from OpenWeatherMap
 
 1. You need to sign up with a valid username and email: http://home.openweathermap.org/users/sign_up
 
@@ -18,7 +22,7 @@
 The API key might take several minutes before it becomes valid. To test it, check that you get weather information for Marrakesh when visiting this link:
 `http://api.openweathermap.org/data/2.5/forecast/city?id=2542997&APPID=<YOUR_API_KEY_HERE>`
 
-### Setting environment
+### Setting environment
 
 You must export these environment variables:
 
@@ -32,23 +36,33 @@ The list of city IDs can be found [here](http://www.openweathermap.org/help/city
 
 ## Via init
 
-`weatherspeaker init`
+```sh
+$ weatherspeaker init
+```
 
 # Usage 
 
-`$ weatherspeaker --help 
-TODO`
+```sh
+$ weatherspeaker --help 
+Weatherspeaker - Command line weather forecast speaker
+Options:
+    [--trace | --verbose]     Activate tracing.
+    [--help | -h]             Show this help and exit.
+    [--version | -v]          Display the version of the program and exit.
+    [init]                    Initialize and configure your personal parameters (API Key and city ID).
+Github repository: 	      http://gihthub.com/marrakchino/weatherspeaker
+```
 
 # Cron
 
-You can cron this job to run periodically, e.g.:
+You can `cron` this job to run periodically, e.g.:
 
 ```sh
 # Runs weatherspeaker every day at 10 p.m.
 0 22 * * * weatherspeaker >> /path/to/weatherspeaker.log 2>&1
 ```
 
-## Licence
+## Licence
 
 **WeatherSpeaker** is released  under the MIT licence, see `LICENCE` file for more details.
 
