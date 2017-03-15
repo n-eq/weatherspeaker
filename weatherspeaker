@@ -18,10 +18,12 @@ UNITS=metric # Default:Kelvin, Metric:Celsius, Imperial:Fahrenheit
 WEATHER_URL="http://api.openweathermap.org/data/2.5/forecast?id=$city_id&APPID=$api_key&units=$UNITS"
 
 ESPEAK=espeak
-# making assumptions... TODO: fix this
-if [ -f "/usr/lib/x86_64-linux-gnu/espeak-data/voices/female_custom_voice" ]; then
-	ESPEAK="$ESPEAK -v female_custom_voice"
+espeak_data_path="$($ESPEAK --version| sed 's/.*Data at: //g')"
+if [ ! -f "$espeak_data_path/voices/female_custom_voice" ]; then
+	# copy the custom voice file if it's not already in the expected directory
+	cp "$HERE/female_custom_voice" "$espeak_data_path/voices/female_custom_voice"
 fi
+ESPEAK="$ESPEAK -v female_custom_voice"
 
 current_hour_of_the_day=$(date +%H)
 
