@@ -62,12 +62,15 @@ You can `cron` this job to run periodically, e.g.:
 0 22 * * * weatherspeaker >> /path/to/weatherspeaker.log 2>&1
 ```
 
-## Licence
-
-**WeatherSpeaker** is released  under the MIT licence, see `LICENCE` file for more details.
-
 # TODO
 
 * Check if there are any open [issues](http://github.com/marrakchino/weatherspeaker/issues) and see whether you can contribute by fixing them.
 
 * Use the functions `get_coordinates_from_ip` and `get_city_country_from_ip` to allow the user to use the program without explicitly specifying a city. See for example how you can extract the city ID number by knowing its name from: http://www.openweathermap.org/help/city_list.txt as the API is not performing well when only providing a city name.
+
+* Add a `-d` option to specify the 'day delay' of the forecast, e.g. invoking `weatherspeaker -d 3` returns the weather forecast of 3 days later.
+
+## Licence
+
+**WeatherSpeaker** is released  under the MIT licence, see `LICENCE` file for more details.
+
