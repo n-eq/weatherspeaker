@@ -5,7 +5,6 @@
 **WeatherSpeaker** | a command-line weather forecast speaker. It allows the user to hear the weather forecast of a particular location for a particular date
 
 
-
 ## Dependencies
 
 * **espeak** is a compact opensource software speech synthesizer for English and other languages. You can download it [here](http://www.espeak.sourceforce.net).
@@ -22,7 +21,15 @@
 The API key might take several minutes before it becomes valid. To test it, check that you get weather information for Marrakesh when visiting this link:
 `http://api.openweathermap.org/data/2.5/forecast/city?id=2542997&APPID=<YOUR_API_KEY_HERE>`
 
-### Setting environment
+# Configuration
+
+## Via init
+
+```sh
+$ weatherspeaker init
+```
+
+## Setting environment
 
 You must export these environment variables:
 
@@ -31,14 +38,6 @@ You must export these environment variables:
 `export WTSPEAK_DEFAULT_CITY_ID=<DEFAULT_CITY_ID>` 
 
 The list of city IDs can be found [here](http://www.openweathermap.org/help/city_list.txt).
-
-# Configuration
-
-## Via init
-
-```sh
-$ weatherspeaker init
-```
 
 # Usage 
 
@@ -70,7 +69,7 @@ You can `cron` this job to run periodically, e.g.:
 
 * Add a `-d` option to specify the 'day delay' of the forecast, e.g. invoking `weatherspeaker -d 3` returns the weather forecast of 3 days later.
 
-* Improve weather forecast script: give more details about the temperature and the description.
+* Improve weather forecast script.
 
 ## Licence
 
