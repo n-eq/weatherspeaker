@@ -70,6 +70,8 @@ You can `cron` this job to run periodically, e.g.:
 
 * Add a `-d` option to specify the 'day delay' of the forecast, e.g. invoking `weatherspeaker -d 3` returns the weather forecast of 3 days later.
 
+* Improve weather forecast script: give more details about the temperature and the description.
+
 ## Licence
 
 **WeatherSpeaker** is released  under the MIT licence, see `LICENCE` file for more details.
