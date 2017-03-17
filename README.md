@@ -31,13 +31,20 @@ $ weatherspeaker init
 
 ## Setting environment
 
-You must export these environment variables:
+- You may want export these environment variables (adding them to your ~/.bashrc file for example):
 
 `export OPENWEATHERMAP_APIKEY=<YOUR_API_KEY>`
 
 `export WTSPEAK_DEFAULT_CITY_ID=<DEFAULT_CITY_ID>` 
 
-The list of city IDs can be found [here](http://www.openweathermap.org/help/city_list.txt).
+- One other possibility (recommended) is to create two files: `config/.openweathermap_apikey` and `config/.default_city_id` with the following contents:
+```sh
+$ cat config/.openweathermap_apikey
+<YOUR_API_KEY>
+
+$ cat config/.default_city_id
+<YOUR_CITY_ID>
+```
 
 # Usage 
 
