@@ -87,5 +87,5 @@ A non-exhaustive list of suggested unsolved bugs/improvement ideas is given here
 
 # Licence
 
-**WeatherSpeaker** is released  under the MIT licence, see `LICENCE` file for more details.
+**WeatherSpeaker** is released under the MIT licence, see `LICENCE` file for more details.
 
