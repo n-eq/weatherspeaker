@@ -70,6 +70,9 @@ You can `cron` this job to run periodically, e.g.:
 
 # TODO
 
+All contributions are welcome. The project is still relatively small, therefore feel free to fork the repository and send pull requests.
+A non-exhaustive list of suggested unsolved bugs/improvement ideas is given hereafter:
+
 * Check if there are any open [issues](http://github.com/marrakchino/weatherspeaker/issues) and see whether you can contribute by fixing them.
 
 * Use the functions `get_coordinates_from_ip` and `get_city_country_from_ip` to allow the user to use the program without explicitly specifying a city. See for example how you can extract the city ID number by knowing its name from: http://www.openweathermap.org/help/city_list.txt as the API is not performing well when only providing a city name.
