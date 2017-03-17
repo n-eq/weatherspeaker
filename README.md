@@ -78,7 +78,9 @@ You can `cron` this job to run periodically, e.g.:
 
 * Improve weather forecast script.
 
-* Eventually extend the project to other platforms (Windows, MacOS, ...)
+* Eventually extend the project to other platforms (Windows, MacOS, ...).
+
+* Add new languages for the forecast.
 
 # Licence
 
