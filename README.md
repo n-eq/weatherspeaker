@@ -1,8 +1,8 @@
-# WeatherSpeaker
+# weatherspeaker
 [![version](https://img.shields.io/badge/version-v1.0.1-red.svg)](https://github.com/marrakchino/weatherspeaker/releases)
 [![license](http://img.shields.io/badge/license-mit-blue.svg)](https://opensource.org/licenses/MIT)
 
-**WeatherSpeaker** | a command-line weather forecast speaker. It allows the user to hear the weather forecast of a particular location for a particular date
+**weatherspeaker** | a command-line weather forecast speaker. It allows the user to hear the weather forecast of a particular location for a particular date
 
 
 ## Dependencies
@@ -87,5 +87,5 @@ A non-exhaustive list of suggested unsolved bugs/improvement ideas is given here
 
 # Licence
 
-**WeatherSpeaker** is released under the MIT licence, see `LICENCE` file for more details.
+**weatherspeaker** is released under the MIT licence, see `LICENCE` file for more details.
 
