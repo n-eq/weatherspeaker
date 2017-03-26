@@ -1,15 +1,18 @@
 #!/usr/bin/env bash
+set -e
+VERSION="1.1.0"
 
 HERE=$(cd "$(dirname "$0")" && pwd)
+CONFIG_FILE="$HERE/config/.weatherspeaker.conf"
 
-if [ -f "$HERE/config/.openweathermap_apikey" ]; then
-	api_key=$(sed -n '1p' < "$HERE/config/.openweathermap_apikey")
+if [ -f "$CONFIG_FILE" ]; then
+	api_key=$(grep "key" "$CONFIG_FILE"| sed -e 's/.*key://g')
 else
 	api_key="$OPENWEATHERMAP_APIKEY"
 fi
 
-if test -f "$HERE/config/.default_city_id"; then
-	city_id=$(sed -n '1p' < "$HERE/config/.default_city_id")
+if test -f "$CONFIG_FILE"; then
+	city_id=$(grep "id" "$CONFIG_FILE"| sed -e 's/.*id://g')
 else
 	city_id="$WTSPEAK_DEFAULT_CITY_ID"
 fi
@@ -17,13 +20,13 @@ fi
 UNITS=metric # Default:Kelvin, Metric:Celsius, Imperial:Fahrenheit
 WEATHER_URL="http://api.openweathermap.org/data/2.5/forecast?id=$city_id&APPID=$api_key&units=$UNITS"
 
-ESPEAK=espeak
-espeak_data_path="$($ESPEAK --version| sed 's/.*Data at: //g')"
+ESPEAK_BIN=espeak
+espeak_data_path="$($ESPEAK_BIN --version| sed 's/.*Data at: //g')"
 if [ ! -f "$espeak_data_path/voices/female_custom_voice" ]; then
 	# copy the custom voice file if it's not already in the expected directory
 	cp "$HERE/female_custom_voice" "$espeak_data_path/voices/female_custom_voice"
 fi
-ESPEAK="$ESPEAK -v female_custom_voice"
+ESPEAK_BIN="$ESPEAK_BIN -v female_custom_voice"
 
 current_hour_of_the_day=$(date +%H)
 
@@ -41,41 +44,76 @@ else
 fi
 
 display_usage(){
-	echo "Weatherspeaker - Command line weather forecast speaker"
+	echo "weatherspeaker - Command line weather forecast speaker"
 	echo "Options:"
-	echo "    [--trace | --verbose]     Activate tracing."
-	echo "    [--help | -h]             Show this help and exit."
-	echo "    [--version | -v]          Display the version of the program and exit."
-	echo "    [init]                    Initialize and configure your personal parameters (API Key and city ID)."
-	echo "Github repository: 	    http://gihthub.com/marrakchino/weatherspeaker"
+	# not yet supported
+	echo "    [--config-file | -c] <path>        Use a custom configuration file located in <path>." 
+	echo "    [--trace | --verbose]              Activate tracing."
+	echo "    [--help | -h]                      Show this help and exit."
+	echo "    [--version | -v]                   Display the version of the program and exit."
+	echo "    [init]                             Initialize and configure your personal parameters (API Key and city ID)."
+	echo ""
+	echo "    Github repository: 		     http://gihthub.com/marrakchino/weatherspeaker"
 	exit 0
 }
 
+# $1: item to replace (key, id)
+# $2: new value
+replace_conf(){
+	sed -i "s/$1.*$/$1:$2/" "$CONFIG_FILE"
+}
+
 display_version(){
-	echo "weatherspeaker - Version 1.0"
+	echo "weatherspeaker - Version $VERSION"
 	exit 0
 }
 
 init(){
-	echo "$api_key" > "$HERE/config/.openweathermap_apikey"
-	case "$?" in
-		0)
-			echo "[API Key] Done";;
-		*)
-			echo "[API Key] Error when writing"
-			return 1
-			;;
-	esac
+	if grep -q "key" "$CONFIG_FILE"; then
+		read -p "API Key already exists in $CONFIG_FILE, overwrite it? [y]es, [n]o " action
+		case "$action" in
+			y)
+				read -p "New API key: " new_api_key
+				replace_conf "key" "$new_api_key"
+				echo "[API KEY] Overwrote API key in $CONFIG_FILE"
+				;;
+			*)
+				;;
+		esac
+	else	
+		echo "key:$api_key" >> "$CONFIG_FILE"
+		case "$?" in
+			0)
+				echo "[API Key] Done";;
+			*)
+				echo "[API Key] Error when writing"
+				return 1
+				;;
+		esac
+	fi
 
-	echo "$city_id" > "$HERE/config/.default_city_id"
-	case "$?" in
-		0)
-			echo "[City ID] Done";;
-		*)
-			echo "[City ID] Error when writing"
-			return 1
-			;;
-	esac
+	if grep -q "id" "$CONFIG_FILE"; then
+		read -p "Default city ID already exists in $CONFIG_FILE, overwrite it? [y]es, [n]o " action
+		case "$action" in
+			y)
+				read -p "New city ID: " new_city_id
+				replace_conf "id" "$new_city_id"
+				echo "[City ID] Overwrote city ID in $CONFIG_FILE"
+				;;
+			*)
+				;;
+		esac
+	else
+		echo "id:$city_id" >> "$CONFIG_FILE"
+		case "$?" in
+			0)
+				echo "[City ID] Done";;
+			*)
+				echo "[City ID] Error when writing"
+				return 1
+				;;
+		esac
+	fi
 }
 
 # Command line parsing
@@ -95,8 +133,8 @@ while (( "$#" )); do
 			;;
 			
 		init)
-			if [ -f "$HERE/config/.openweathermap_apikey" ]; then
-				api_key=$(sed -n '1p' < "$HERE/config/.openweathermap_apikey")
+			if [ -f "$CONFIG_FILE" ]; then
+				api_key=$(grep "key" "$CONFIG_FILE"| sed -e 's/.*key://g')
 			else
 				api_key=$OPENWEATHERMAP_APIKEY
 			fi
@@ -105,8 +143,8 @@ while (( "$#" )); do
 				read -e -p "Enter your API key: " api_key
 			fi
 
-			if [ -f "$HERE/config/.default_city_id" ]; then
-				city_id=$(sed -n '1p' < "$HERE/config/.default_city_id")
+			if [ -f "$CONFIG_FILE" ]; then
+				city_id=$(grep "id" "$CONFIG_FILE"| sed -e 's/.*id://g')
 			else
 				city_id="$WTSPEAK_DEFAULT_CITY_ID"
 			fi
@@ -118,20 +156,17 @@ while (( "$#" )); do
 			exit $?
 			;;
 
+# 		-c| --config-file)
+# 			CONFIG_FILE="$2"
+# 			shift 2 || break
+# 			;;
+
 		*)
 			shift 1 || break
 			;;
 			
 	esac
 done
-
-# Exit if the environment variables are not defined
-# TODO: Prompt the user for the API key and default city id/city name if the 
-# environment variables are not defined
-# [ -z "$OPENWEATHERMAP_APIKEY" ] && echo "API Key not defined" && exit 1; 
-# [ -z "$api_key" ] && echo "API Key not defined" && exit 1; 
-# # read -e -p 'Enter your OpenWeatherMap API key: ' "$OPENWEATHERMAP_APIKEY"
-# [ -z "$WTSPEAK_DEFAULT_CITY_ID" ] && echo "Default city ID not defined" && exit 1;
 
 weather_forecast_script=""
 if [ "$afternoon" -gt 0 ]; then
@@ -169,6 +204,8 @@ adjectify_description(){
 	
 	elif [ "$weather_main_description" == "Extreme" ]; then
 		weather_forecast_script="$weather_forecast_script extreme."
+	else
+		weather_forecast_script="$weather_forecast_script normal."
 	fi
 }
 
@@ -201,7 +238,7 @@ curl_weather(){
 	jq ".list[((11 - $day_offset))]| .weather[] .main")
 	
 	weather_full_description=$(curl -s "$WEATHER_URL"|
-	jq ".list[$((11 - $day_offset))]| .weather[] .description")
+	jq ".list[((11 - $day_offset))]| .weather[] .description")
 	
 	weather_code=$(curl -s "$WEATHER_URL"| jq '.cod')
 
@@ -210,7 +247,6 @@ curl_weather(){
 
 	weather_afternoon_temp=$(curl -s "$WEATHER_URL"|
 	jq ".list[((11 - $day_offset + 2))]| .main.temp")
-
 }
 
 curl_weather 1
@@ -219,5 +255,5 @@ temperaturify_description
 
 # Don't speak unless the information has been correctly fetched 
 if [[ -n "$weather_morning_temp" && -n "$weather_afternoon_temp" ]]; then
-	$ESPEAK "$weather_forecast_script" &
+	$ESPEAK_BIN "$weather_forecast_script" &
 fi
