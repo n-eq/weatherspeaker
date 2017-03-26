@@ -56,16 +56,6 @@ Otherwise, you may (will) have to export these environment variables (adding the
 
 `export WTSPEAK_DEFAULT_CITY_ID=<DEFAULT_CITY_ID>` 
 
-- One other possibility (recommended) is to create two files: `config/.openweathermap_apikey` and `config/.default_city_id` with the following contents:
-
-```sh
-$ cat config/.openweathermap_apikey
-<YOUR_API_KEY>
-
-$ cat config/.default_city_id
-<YOUR_CITY_ID>
-```
-
 # Usage 
 
 ```sh
