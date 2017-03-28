@@ -34,7 +34,7 @@ id:<YOUR_DEFAULT_CITY_ID>
 
 The order of the lines is indifferent, but make sure there are no trailing spaces or useless characters.
 
-### Resetting the variables
+### Resetting the variables
 
 You can overwrite these environment variables (if you happen to change the city or to use a new API key) by invoking `init`:
 
