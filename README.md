@@ -93,11 +93,13 @@ A non-exhaustive list of suggested unsolved bugs/improvement ideas is given here
 
 * Add a `-c` option to use a custom configuration file (in a different location) instead of config/.weatherspeaker.conf. See `display_usage`.
 
-* Improve weather forecast script.
+* Improve the weather forecast script.
 
 * Eventually extend the project to other platforms (Windows, MacOS, ...).
 
 * Add new languages for the forecast.
+
+* Write a Makefile containing, among other stuff, an 'install' rule.
 
 # Licence
 
