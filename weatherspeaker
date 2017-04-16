@@ -3,30 +3,30 @@ set -e
 VERSION="1.1.0"
 
 HERE=$(cd "$(dirname "$0")" && pwd)
-CONFIG_FILE="$HERE/config/.weatherspeaker.conf"
+CONFIG_FILE="${HERE}/config/.weatherspeaker.conf"
 
-if [ -f "$CONFIG_FILE" ]; then
-	api_key=$(grep "key" "$CONFIG_FILE"| sed -e 's/.*key://g')
+if [ -f "${CONFIG_FILE}" ]; then
+	api_key=$(grep -s "key" "${CONFIG_FILE}"| sed -e 's/.*key://g')
 else
-	api_key="$OPENWEATHERMAP_APIKEY"
+	api_key="${OPENWEATHERMAP_APIKEY}"
 fi
 
-if test -f "$CONFIG_FILE"; then
-	city_id=$(grep "id" "$CONFIG_FILE"| sed -e 's/.*id://g')
+if test -f "${CONFIG_FILE}"; then
+	city_id=$(grep -s "id" "$CONFIG_FILE"| sed -e 's/.*id://g')
 else
-	city_id="$WTSPEAK_DEFAULT_CITY_ID"
+	city_id="${WTSPEAK_DEFAULT_CITY_ID}"
 fi
 
 UNITS=metric # Default:Kelvin, Metric:Celsius, Imperial:Fahrenheit
-WEATHER_URL="http://api.openweathermap.org/data/2.5/forecast?id=$city_id&APPID=$api_key&units=$UNITS"
+WEATHER_URL="http://api.openweathermap.org/data/2.5/forecast?id=${city_id}&APPID=${api_key}&units=${UNITS}"
 
 ESPEAK_BIN=espeak
-espeak_data_path="$($ESPEAK_BIN --version| sed 's/.*Data at: //g')"
-if [ ! -f "$espeak_data_path/voices/female_custom_voice" ]; then
+espeak_data_path="$(${ESPEAK_BIN} --version| sed 's/.*Data at: //g')"
+if [ ! -f "${espeak_data_path}/voices/female_custom_voice" ]; then
 	# copy the custom voice file if it's not already in the expected directory
-	cp "$HERE/female_custom_voice" "$espeak_data_path/voices/female_custom_voice"
+	cp "${HERE}/female_custom_voice" "${espeak_data_path}/voices/female_custom_voice"
 fi
-ESPEAK_BIN="$ESPEAK_BIN -v female_custom_voice"
+ESPEAK_BIN="${ESPEAK_BIN} -v female_custom_voice"
 
 current_hour_of_the_day=$(date +%H)
 
@@ -36,8 +36,8 @@ current_hour_of_the_day=$(date +%H)
 # at 7pm, you'll get weather data for 21:00, 00:00, 03:00, 06:00, ... and so on
 # for approximately 5 days (35 entries). Every day is therefore divided into
 # 8 intervals of 3 hours (0-3-6-9-12-15-17-18-21-24).
-day_interval=$((((((($current_hour_of_the_day) * 7)) / 24)) + 2))
-if [ "$current_hour_of_the_day" -ge 12 ]; then
+day_interval=$(((((((${current_hour_of_the_day}) * 7)) / 24)) + 2))
+if [ "${current_hour_of_the_day}" -ge 12 ]; then
 	afternoon=0
 else
 	afternoon=1
@@ -64,24 +64,24 @@ replace_conf(){
 }
 
 display_version(){
-	echo "weatherspeaker - Version $VERSION"
+	echo "weatherspeaker - Version ${VERSION}"
 	exit 0
 }
 
 init(){
-	if grep -q "key" "$CONFIG_FILE"; then
-		read -p "API Key already exists in $CONFIG_FILE, overwrite it? [y]es, [n]o " action
-		case "$action" in
+	if grep -s -q "key" "${CONFIG_FILE}"; then
+		read -p "API Key already exists in ${CONFIG_FILE}, overwrite it? [y]es, [n]o " action
+		case "${action}" in
 			y)
 				read -p "New API key: " new_api_key
-				replace_conf "key" "$new_api_key"
-				echo "[API KEY] Overwrote API key in $CONFIG_FILE"
+				replace_conf "key" "${new_api_key}"
+				echo "[API KEY] Overwrote API key in ${CONFIG_FILE}"
 				;;
 			*)
 				;;
 		esac
 	else	
-		echo "key:$api_key" >> "$CONFIG_FILE"
+		echo "key:${api_key}" >> "${CONFIG_FILE}"
 		case "$?" in
 			0)
 				echo "[API Key] Done";;
@@ -92,19 +92,19 @@ init(){
 		esac
 	fi
 
-	if grep -q "id" "$CONFIG_FILE"; then
-		read -p "Default city ID already exists in $CONFIG_FILE, overwrite it? [y]es, [n]o " action
-		case "$action" in
+	if grep -s -q "id" "${CONFIG_FILE}"; then
+		read -p "Default city ID already exists in ${CONFIG_FILE}, overwrite it? [y]es, [n]o " action
+		case "${action}" in
 			y)
 				read -p "New city ID: " new_city_id
-				replace_conf "id" "$new_city_id"
-				echo "[City ID] Overwrote city ID in $CONFIG_FILE"
+				replace_conf "id" "${new_city_id}"
+				echo "[City ID] Overwrote city ID in ${CONFIG_FILE}"
 				;;
 			*)
 				;;
 		esac
 	else
-		echo "id:$city_id" >> "$CONFIG_FILE"
+		echo "id:${city_id}" >> "${CONFIG_FILE}"
 		case "$?" in
 			0)
 				echo "[City ID] Done";;
@@ -133,23 +133,23 @@ while (( "$#" )); do
 			;;
 			
 		init)
-			if [ -f "$CONFIG_FILE" ]; then
-				api_key=$(grep "key" "$CONFIG_FILE"| sed -e 's/.*key://g')
+			if [ -f "${CONFIG_FILE}" ]; then
+				api_key=$(grep -s "key" "${CONFIG_FILE}"| sed -e 's/.*key://g')
 			else
-				api_key=$OPENWEATHERMAP_APIKEY
+				api_key=${OPENWEATHERMAP_APIKEY}
 			fi
 
-			if [[ -z "${api_key}" || "$api_key" == "$OPENWEATHERMAP_APIKEY" ]]; then 
+			if [[ -z "${api_key}" || "${api_key}" == "${OPENWEATHERMAP_APIKEY}" ]]; then 
 				read -e -p "Enter your API key: " api_key
 			fi
 
-			if [ -f "$CONFIG_FILE" ]; then
-				city_id=$(grep "id" "$CONFIG_FILE"| sed -e 's/.*id://g')
+			if [ -f "${CONFIG_FILE}" ]; then
+				city_id=$(grep -s "id" "${CONFIG_FILE}"| sed -e 's/.*id://g')
 			else
-				city_id="$WTSPEAK_DEFAULT_CITY_ID"
+				city_id="${WTSPEAK_DEFAULT_CITY_ID}"
 			fi
 
-			if [[ -z "${city_id}" || "$city_id" == "$WTSPEAK_DEFAULT_CITY_ID" ]]; then 
+			if [[ -z "${city_id}" || "${city_id}" == "${WTSPEAK_DEFAULT_CITY_ID}" ]]; then 
 				read -e -p "Enter your city ID: " city_id
 			fi
 			init
@@ -169,7 +169,7 @@ while (( "$#" )); do
 done
 
 weather_forecast_script=""
-if [ "$afternoon" -gt 0 ]; then
+if [ "${afternoon}" -gt 0 ]; then
 	weather_forecast_script="This afternoon, the weather will be "
 else 
 	weather_forecast_script="Tomorrow, the weather will be "
@@ -182,37 +182,35 @@ adjectify_description(){
 	weather_main_description="${weather_main_description//\"}"
 
 	if [ "$weather_main_description" == "Clear" ]; then
-		weather_forecast_script="$weather_forecast_script clear."
+		weather_forecast_script="${weather_forecast_script}clear."
 
 	elif [ "$weather_main_description" == "Rain" ]; then
-		weather_forecast_script="$weather_forecast_script rainy."
+		weather_forecast_script="${weather_forecast_script}rainy."
 
 	elif [ "$weather_main_description" == "Snow" ]; then
-		weather_forecast_script="$weather_forecast_script snowy."
+		weather_forecast_script="${weather_forecast_script}snowy."
 
 	elif [ "$weather_main_description" == "Thunderstorm" ]; then
-		weather_forecast_script="$weather_forecast_script stormy."
+		weather_forecast_script="${weather_forecast_script}stormy."
 	
 	elif [ "$weather_main_description" == "Drizzle" ]; then
-		weather_forecast_script="$weather_forecast_script drizzly."
+		weather_forecast_script="${weather_forecast_script}drizzly."
 	
 	elif [ "$weather_main_description" == "Clouds" ]; then
-		weather_forecast_script="$weather_forecast_script cloudy."
+		weather_forecast_script="${weather_forecast_script}cloudy."
 	
 	elif [ "$weather_main_description" == "Atmosphere" ]; then
-		weather_forecast_script="$weather_forecast_script atmospheric."
+		weather_forecast_script="${weather_forecast_script}atmospheric."
 	
 	elif [ "$weather_main_description" == "Extreme" ]; then
-		weather_forecast_script="$weather_forecast_script extreme."
+		weather_forecast_script="${weather_forecast_script}extreme."
 	else
-		weather_forecast_script="$weather_forecast_script normal."
+		weather_forecast_script="${weather_forecast_script}normal."
 	fi
 }
 
 temperaturify_description(){
-	weather_forecast_script="$weather_forecast_script Temperatures will\
-	range from $weather_morning_temp degrees in the morning to\
-	$weather_afternoon_temp degrees in the afternoon."
+	weather_forecast_script="${weather_forecast_script} Temperatures will range from ${weather_morning_temp} degrees in the morning to ${weather_afternoon_temp} degrees in the afternoon."
 }
 
 # returns the city coordinates based on the ip address
@@ -232,21 +230,21 @@ get_city_country_from_ip(){
 # $1 day offset: 0 means today, 1 tomorrow... etc
 # TODO: factorize the calls to curl hereafter
 curl_weather(){
-	day_offset="$day_interval"
+	day_offset="${day_interval}"
 # 	day_offset="$1"
-	weather_main_description=$(curl -s "$WEATHER_URL"|
-	jq ".list[((11 - $day_offset))]| .weather[] .main")
+	weather_main_description=$(curl -s "${WEATHER_URL}"|
+	jq ".list[((11 - ${day_offset}))]| .weather[] .main")
 	
-	weather_full_description=$(curl -s "$WEATHER_URL"|
-	jq ".list[((11 - $day_offset))]| .weather[] .description")
+	weather_full_description=$(curl -s "${WEATHER_URL}"|
+	jq ".list[((11 - ${day_offset}))]| .weather[] .description")
 	
-	weather_code=$(curl -s "$WEATHER_URL"| jq '.cod')
+	weather_code=$(curl -s "${WEATHER_URL}"| jq '.cod')
 
-	weather_morning_temp=$(curl -s "$WEATHER_URL"|
-	jq ".list[((11 - $day_offset))]| .main.temp")
+	weather_morning_temp=$(curl -s "${WEATHER_URL}"|
+	jq ".list[((11 - ${day_offset}))]| .main.temp")
 
-	weather_afternoon_temp=$(curl -s "$WEATHER_URL"|
-	jq ".list[((11 - $day_offset + 2))]| .main.temp")
+	weather_afternoon_temp=$(curl -s "${WEATHER_URL}"|
+	jq ".list[((11 - ${day_offset} + 2))]| .main.temp")
 }
 
 curl_weather 1
@@ -254,6 +252,6 @@ adjectify_description
 temperaturify_description
 
 # Don't speak unless the information has been correctly fetched 
-if [[ -n "$weather_morning_temp" && -n "$weather_afternoon_temp" ]]; then
-	$ESPEAK_BIN "$weather_forecast_script" &
+if [[ -n "${weather_morning_temp}" && -n "${weather_afternoon_temp}" ]]; then
+	${ESPEAK_BIN} "${weather_forecast_script}" &
 fi
