@@ -1,5 +1,5 @@
 # weatherspeaker
-[![version](https://img.shields.io/badge/version-v1.1.0-red.svg)](https://github.com/marrakchino/weatherspeaker/releases)
+[![version](https://img.shields.io/badge/version-v1.1.1-red.svg)](https://github.com/marrakchino/weatherspeaker/releases)
 [![license](http://img.shields.io/badge/license-mit-blue.svg)](https://opensource.org/licenses/MIT)
 
 **weatherspeaker** | a command-line weather forecast speaker. It allows the user to hear the weather forecast of a particular location for a particular date
