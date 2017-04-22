@@ -1,53 +1,15 @@
 #!/usr/bin/env bash
 set -e
 VERSION="1.1.0"
-
 HERE=$(cd "$(dirname "$0")" && pwd)
-CONFIG_FILE="${HERE}/config/.weatherspeaker.conf"
-
-if [ -f "${CONFIG_FILE}" ]; then
-	api_key=$(grep -s "key" "${CONFIG_FILE}"| sed -e 's/.*key://g')
-else
-	api_key="${OPENWEATHERMAP_APIKEY}"
-fi
-
-if test -f "${CONFIG_FILE}"; then
-	city_id=$(grep -s "id" "$CONFIG_FILE"| sed -e 's/.*id://g')
-else
-	city_id="${WTSPEAK_DEFAULT_CITY_ID}"
-fi
-
-UNITS=metric # Default:Kelvin, Metric:Celsius, Imperial:Fahrenheit
-WEATHER_URL="http://api.openweathermap.org/data/2.5/forecast?id=${city_id}&APPID=${api_key}&units=${UNITS}"
 
 ESPEAK_BIN=espeak
-espeak_data_path="$(${ESPEAK_BIN} --version| sed 's/.*Data at: //g')"
-if [ ! -f "${espeak_data_path}/voices/female_custom_voice" ]; then
-	# copy the custom voice file if it's not already in the expected directory
-	cp "${HERE}/female_custom_voice" "${espeak_data_path}/voices/female_custom_voice"
-fi
-ESPEAK_BIN="${ESPEAK_BIN} -v female_custom_voice"
-
-current_hour_of_the_day=$(date +%H)
-
-# (The following expression could be a nominee for the most parenthesized expression award).
-# The data fetched from OpenWeatherMap contains weather information
-# for every 3 coming hours. Which means, if you fore example make a request
-# at 7pm, you'll get weather data for 21:00, 00:00, 03:00, 06:00, ... and so on
-# for approximately 5 days (35 entries). Every day is therefore divided into
-# 8 intervals of 3 hours (0-3-6-9-12-15-17-18-21-24).
-day_interval=$(((((((${current_hour_of_the_day}) * 7)) / 24)) + 2))
-if [ "${current_hour_of_the_day}" -ge 12 ]; then
-	afternoon=0
-else
-	afternoon=1
-fi
 
 display_usage(){
 	echo "weatherspeaker - Command line weather forecast speaker"
 	echo "Options:"
 	# not yet supported
-	echo "    [--config-file | -c] <path>        Use a custom configuration file located in <path>." 
+	echo "    [--config | -c] <path>             Use a custom configuration file located in <path>." 
 	echo "    [--trace | --verbose]              Activate tracing."
 	echo "    [--help | -h]                      Show this help and exit."
 	echo "    [--version | -v]                   Display the version of the program and exit."
@@ -57,15 +19,28 @@ display_usage(){
 	exit 0
 }
 
+display_version(){
+	echo "weatherspeaker - Version ${VERSION}"
+	exit 0
+}
+
+# returns the city coordinates based on the ip address
+# <latitude> <longitude>
+# (credits to http://askubuntu.com/a/430864)
+get_coordinates_from_ip(){
+	curl -s http://whatismycountry.com/ | sed -n 's/.*Coordinates \(.*\)<.*/\1/p'	
+}
+
+# returns the city and country name based on the ip adress
+# <city>,<country>
+get_city_country_from_ip(){
+	curl -s http://whatismycountry.com/ | sed -n 's|.*> *\(.*\)</h3>|\1|p'
+}
+
 # $1: item to replace (key, id)
 # $2: new value
 replace_conf(){
 	sed -i "s/$1.*$/$1:$2/" "$CONFIG_FILE"
-}
-
-display_version(){
-	echo "weatherspeaker - Version ${VERSION}"
-	exit 0
 }
 
 init(){
@@ -116,6 +91,9 @@ init(){
 	fi
 }
 
+CONFIG_FILE="${HERE}/config/.weatherspeaker.conf"
+
+
 # Command line parsing
 while (( "$#" )); do
 	case "$1" in
@@ -156,10 +134,10 @@ while (( "$#" )); do
 			exit $?
 			;;
 
-# 		-c| --config-file)
-# 			CONFIG_FILE="$2"
-# 			shift 2 || break
-# 			;;
+		--config| -c)
+			CONFIG_FILE="$2"
+			shift 2 || break
+			;;
 
 		*)
 			shift 1 || break
@@ -167,6 +145,44 @@ while (( "$#" )); do
 			
 	esac
 done
+
+if [ -f "${CONFIG_FILE}" ]; then
+	api_key=$(grep -s "key" "${CONFIG_FILE}"| sed -e 's/.*key://g')
+else
+	api_key="${OPENWEATHERMAP_APIKEY}"
+fi
+
+if test -f "${CONFIG_FILE}"; then
+	city_id=$(grep -s "id" "$CONFIG_FILE"| sed -e 's/.*id://g')
+else
+	city_id="${WTSPEAK_DEFAULT_CITY_ID}"
+fi
+
+UNITS=metric # Default:Kelvin, Metric:Celsius, Imperial:Fahrenheit
+WEATHER_URL="http://api.openweathermap.org/data/2.5/forecast?id=${city_id}&APPID=${api_key}&units=${UNITS}"
+
+
+current_hour_of_the_day=$(date +%H)
+
+# (The following expression could be a nominee for the most parenthesized expression award).
+# The data fetched from OpenWeatherMap contains weather information
+# for every 3 coming hours. Which means, if you fore example make a request
+# at 7pm, you'll get weather data for 21:00, 00:00, 03:00, 06:00, ... and so on
+# for approximately 5 days (35 entries). Every day is therefore divided into
+# 8 intervals of 3 hours (0-3-6-9-12-15-17-18-21-24).
+day_interval=$(((((((${current_hour_of_the_day}) * 7)) / 24)) + 2))
+if [ "${current_hour_of_the_day}" -ge 12 ]; then
+	afternoon=0
+else
+	afternoon=1
+fi
+
+espeak_data_path="$(${ESPEAK_BIN} --version| sed 's/.*Data at: //g')"
+if [ ! -f "${espeak_data_path}/voices/female_custom_voice" ]; then
+	# copy the custom voice file if it's not already in the expected directory
+	cp "${HERE}/female_custom_voice" "${espeak_data_path}/voices/female_custom_voice"
+fi
+ESPEAK_BIN="${ESPEAK_BIN} -v female_custom_voice"
 
 weather_forecast_script=""
 if [ "${afternoon}" -gt 0 ]; then
@@ -213,19 +229,6 @@ temperaturify_description(){
 	weather_forecast_script="${weather_forecast_script} Temperatures will range from ${weather_morning_temp} degrees in the morning to ${weather_afternoon_temp} degrees in the afternoon."
 }
 
-# returns the city coordinates based on the ip address
-# <latitude> <longitude>
-# (credits to http://askubuntu.com/a/430864)
-get_coordinates_from_ip(){
-	curl -s http://whatismycountry.com/ | sed -n 's/.*Coordinates \(.*\)<.*/\1/p'	
-}
-
-# returns the city and country name based on the ip adress
-# <city>,<country>
-get_city_country_from_ip(){
-	curl -s http://whatismycountry.com/ | sed -n 's|.*> *\(.*\)</h3>|\1|p'
-}
-
 # Fetch weather from openweathermap
 # $1 day offset: 0 means today, 1 tomorrow... etc
 # TODO: factorize the calls to curl hereafter
@@ -252,6 +255,6 @@ adjectify_description
 temperaturify_description
 
 # Don't speak unless the information has been correctly fetched 
-if [[ -n "${weather_morning_temp}" && -n "${weather_afternoon_temp}" ]]; then
+if [[ "${weather_morning_temp}" != null && "${weather_afternoon_temp}" != null ]]; then
 	${ESPEAK_BIN} "${weather_forecast_script}" &
 fi
