@@ -91,8 +91,6 @@ A non-exhaustive list of suggested unsolved bugs/improvement ideas is given here
 
 * Add a `-d` option to specify the 'day delay' of the forecast, e.g. invoking `weatherspeaker -d 3` returns the weather forecast of 3 days later.
 
-* Add a `-c` option to use a custom configuration file (in a different location) instead of config/.weatherspeaker.conf. See `display_usage`.
-
 * Improve the weather forecast script.
 
 * Eventually extend the project to other platforms (Windows, MacOS, ...).
