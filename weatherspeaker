@@ -178,11 +178,11 @@ else
 fi
 
 espeak_data_path="$(${ESPEAK_BIN} --version| sed 's/.*Data at: //g')"
-if [ ! -f "${espeak_data_path}/voices/female_custom_voice" ]; then
+if [ ! -f "${espeak_data_path}/voices/res/female_custom_voice" ]; then
 	# copy the custom voice file if it's not already in the expected directory
-	cp "${HERE}/female_custom_voice" "${espeak_data_path}/voices/female_custom_voice"
+	cp "${HERE}/res/female_custom_voice" "${espeak_data_path}/voices/res/female_custom_voice"
 fi
-ESPEAK_BIN="${ESPEAK_BIN} -v female_custom_voice"
+ESPEAK_BIN="${ESPEAK_BIN} -v res/female_custom_voice"
 
 weather_forecast_script=""
 if [ "${afternoon}" -gt 0 ]; then
