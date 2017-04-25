@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+ 
+zgrep -m 1 -B1 "${1}" city.list.json.gz | head -n 1 | sed -e 's/.*\"id\": //g' -e 's/,//g'
+
