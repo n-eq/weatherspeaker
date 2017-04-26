@@ -3,6 +3,8 @@
 [![license](http://img.shields.io/badge/license-mit-blue.svg)](https://opensource.org/licenses/MIT)
 
 **weatherspeaker** | a command-line weather forecast speaker. It allows the user to hear the weather forecast of a particular location for a particular date
+<audio src="weatherspeaker_example" controls preload></audio>
+
 
 
 ## Dependencies
