@@ -2,3 +2,4 @@
 config
 .gitignore
 stats/*
+*.sw?
