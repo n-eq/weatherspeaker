@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -e
-VERSION="1.1.1"
+VERSION="1.1.2"
 HERE=$(cd "$(dirname "$0")" && pwd)
 
 ESPEAK_BIN=espeak
@@ -24,6 +24,15 @@ display_version(){
 	exit 0
 }
 
+# returns the city ID based on its name from the official city list
+# $1: city name
+get_city_ID(){
+	local city_name="$1"
+	# 'tac |tac' is used to avoid grep error 23 due to non writing completeness (curl) (credits to https://goo.gl/l5g13p)
+	parsed_id=$(curl -sS http://www.openweathermap.org/help/city_list.txt| tac| tac|grep -sm 1 "${city_name}"|sed 's/\s.*$//')
+	echo "${parsed_id}"
+}
+
 # returns the city coordinates based on the ip address
 # <latitude> <longitude>
 # (credits to http://askubuntu.com/a/430864)
@@ -31,10 +40,9 @@ get_coordinates_from_ip(){
 	curl -s http://whatismycountry.com/ | sed -n 's/.*Coordinates \(.*\)<.*/\1/p'	
 }
 
-# returns the city and country name based on the ip adress
-# <city>,<country>
-get_city_country_from_ip(){
-	curl -s http://whatismycountry.com/ | sed -n 's|.*> *\(.*\)</h3>|\1|p'
+# returns the city and country name based on the user's ip address
+get_city_from_ip(){
+	curl -s http://whatismycountry.com/ | sed -n 's|.*> *\(.*\)</h3>|\1|p'|sed -e 's/,.*//g'
 }
 
 # $1: item to replace (key, id)
@@ -93,7 +101,6 @@ init(){
 
 CONFIG_FILE="${HERE}/config/.weatherspeaker.conf"
 
-
 # Command line parsing
 while (( "$#" )); do
 	case "$1" in
@@ -111,7 +118,7 @@ while (( "$#" )); do
 			;;
 			
 		init)
-			if [ -f "${CONFIG_FILE}" ]; then
+			if [[ -f "${CONFIG_FILE}" ]]; then
 				api_key=$(grep -s "key" "${CONFIG_FILE}"| sed -e 's/.*key://g')
 			else
 				api_key=${OPENWEATHERMAP_APIKEY}
@@ -121,7 +128,7 @@ while (( "$#" )); do
 				read -e -p "Enter your API key: " api_key
 			fi
 
-			if [ -f "${CONFIG_FILE}" ]; then
+			if [[ -f "${CONFIG_FILE}" ]]; then
 				city_id=$(grep -s "id" "${CONFIG_FILE}"| sed -e 's/.*id://g')
 			else
 				city_id="${WTSPEAK_DEFAULT_CITY_ID}"
@@ -142,28 +149,33 @@ while (( "$#" )); do
 		*)
 			shift 1 || break
 			;;
-			
 	esac
 done
 
-if [ -f "${CONFIG_FILE}" ]; then
+# Values by default
+api_key="${OPENWEATHERMAP_APIKEY}"
+city_id="${WTSPEAK_DEFAULT_CITY_ID}"
+if [[ -f "${CONFIG_FILE}" ]]; then
 	api_key=$(grep -s "key" "${CONFIG_FILE}"| sed -e 's/.*key://g')
-else
-	api_key="${OPENWEATHERMAP_APIKEY}"
-fi
-
-if test -f "${CONFIG_FILE}"; then
 	city_id=$(grep -s "id" "$CONFIG_FILE"| sed -e 's/.*id://g')
-else
-	city_id="${WTSPEAK_DEFAULT_CITY_ID}"
+	
+	# No API key at all found.
+	if [[ -z "${api_key}" ]]; then
+		echo "No API key found. You can go get one from: http://openweathermap.org/api"
+		exit 1
+	fi
+
+	# No city ID provided, let's handle this.
+	if [[ -z "${city_id}" ]]; then
+		city_name=$(get_city_from_ip)
+		city_id=$(get_city_ID "$city_name")
+	fi
 fi
 
 UNITS=metric # Default:Kelvin, Metric:Celsius, Imperial:Fahrenheit
 WEATHER_URL="http://api.openweathermap.org/data/2.5/forecast?id=${city_id}&APPID=${api_key}&units=${UNITS}"
 
-
 current_hour_of_the_day=$(date +%H)
-
 # (The following expression could be a nominee for the most parenthesized expression award).
 # The data fetched from OpenWeatherMap contains weather information
 # for every 3 coming hours. Which means, if you fore example make a request
@@ -171,21 +183,21 @@ current_hour_of_the_day=$(date +%H)
 # for approximately 5 days (35 entries). Every day is therefore divided into
 # 8 intervals of 3 hours (0-3-6-9-12-15-17-18-21-24).
 day_interval=$(((((((${current_hour_of_the_day}) * 7)) / 24)) + 2))
-if [ "${current_hour_of_the_day}" -ge 12 ]; then
+if [[ "${current_hour_of_the_day}" -ge 12 ]]; then
 	afternoon=0
 else
 	afternoon=1
 fi
 
 espeak_data_path="$(${ESPEAK_BIN} --version| sed 's/.*Data at: //g')"
-if [ ! -f "${espeak_data_path}/voices/female_custom_voice" ]; then
+if [[ ! -f "${espeak_data_path}/voices/female_custom_voice" ]]; then
 	# copy the custom voice file if it's not already in the expected directory
-	cp "${HERE}/res/female_custom_voice" "${espeak_data_path}/voices/res/female_custom_voice"
+	cp "${HERE}/res/female_custom_voice" "${espeak_data_path}/voices/female_custom_voice"
 fi
-ESPEAK_BIN="${ESPEAK_BIN} -v res/female_custom_voice"
+ESPEAK_BIN="${ESPEAK_BIN} -v female_custom_voice"
 
 weather_forecast_script=""
-if [ "${afternoon}" -gt 0 ]; then
+if [[ "${afternoon}" -gt 0 ]]; then
 	weather_forecast_script="This afternoon, the weather will be "
 else 
 	weather_forecast_script="Tomorrow, the weather will be "
@@ -197,28 +209,28 @@ adjectify_description(){
 	# remove the double-quotes
 	weather_main_description="${weather_main_description//\"}"
 
-	if [ "$weather_main_description" == "Clear" ]; then
+	if [[ "$weather_main_description" == "Clear" ]]; then
 		weather_forecast_script="${weather_forecast_script}clear."
 
-	elif [ "$weather_main_description" == "Rain" ]; then
+	elif [[ "$weather_main_description" == "Rain" ]]; then
 		weather_forecast_script="${weather_forecast_script}rainy."
 
-	elif [ "$weather_main_description" == "Snow" ]; then
+	elif [[ "$weather_main_description" == "Snow" ]]; then
 		weather_forecast_script="${weather_forecast_script}snowy."
 
-	elif [ "$weather_main_description" == "Thunderstorm" ]; then
+	elif [[ "$weather_main_description" == "Thunderstorm" ]]; then
 		weather_forecast_script="${weather_forecast_script}stormy."
 	
-	elif [ "$weather_main_description" == "Drizzle" ]; then
+	elif [[ "$weather_main_description" == "Drizzle" ]]; then
 		weather_forecast_script="${weather_forecast_script}drizzly."
 	
-	elif [ "$weather_main_description" == "Clouds" ]; then
+	elif [[ "$weather_main_description" == "Clouds" ]]; then
 		weather_forecast_script="${weather_forecast_script}cloudy."
 	
-	elif [ "$weather_main_description" == "Atmosphere" ]; then
+	elif [[ "$weather_main_description" == "Atmosphere" ]]; then
 		weather_forecast_script="${weather_forecast_script}atmospheric."
 	
-	elif [ "$weather_main_description" == "Extreme" ]; then
+	elif [[ "$weather_main_description" == "Extreme" ]]; then
 		weather_forecast_script="${weather_forecast_script}extreme."
 	else
 		weather_forecast_script="${weather_forecast_script}normal."

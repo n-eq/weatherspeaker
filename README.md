@@ -1,5 +1,5 @@
 # weatherspeaker
-[![version](https://img.shields.io/badge/version-v1.1.1-red.svg)](https://github.com/marrakchino/weatherspeaker/releases)
+[![version](https://img.shields.io/badge/version-v1.1.2-red.svg)](https://github.com/marrakchino/weatherspeaker/releases)
 [![license](http://img.shields.io/badge/license-mit-blue.svg)](https://opensource.org/licenses/MIT)
 
 **weatherspeaker** | a command-line weather forecast speaker. It allows the user to hear the weather forecast of a particular location for a particular date. [Click here to hear a sample output of the program](https://clyp.it/0lsa5ubq)
@@ -32,7 +32,11 @@ key:<YOUR_API_KEY>
 id:<YOUR_DEFAULT_CITY_ID>
 ```
 
-The order of the lines is indifferent, but make sure there are no trailing spaces or useless characters.
+The order of the lines is indifferent, but make sure there are no trailing spaces or useless characters. 
+
+Ideally, you can provide the two lines. Still, only the API key is required. Indeed, when the script doesn't find a default city ID, it estimates your location based on your IP address and converts the city name into a city ID based on the API city list. 
+
+However, this solution is not recommended although operational for accuracy reasons.
 
 ### Resetting the variables
 
@@ -44,13 +48,13 @@ API Key already exists in /home/marrakchino/github/weatherspeaker/config/.weathe
 New API key: 123456789
 [API KEY] Overwrote API key in /home/marrakchino/github/weatherspeaker/config/.weatherspeaker.conf
 Default city ID already exists in /home/marrakchino/github/weatherspeaker/config/.weatherspeaker.conf, overwrite it? [y]es, [n]o y
-New city ID: 1234566778
+New city ID: 1234554321
 [City ID] Overwrote city ID in /home/marrakchino/github/weatherspeaker/config/.weatherspeaker.conf
 ```
 
 ## Setting environment
 
-Otherwise, you may (will) have to export these environment variables (adding them to your ~/.bashrc file for example):
+Otherwise, you may (will) have to export these environment variables (adding them to your `~/.bashrc` file for example):
 
 `export OPENWEATHERMAP_APIKEY=<YOUR_API_KEY>`
 
@@ -86,8 +90,6 @@ All contributions are welcome. The project is still relatively small, therefore 
 A non-exhaustive list of suggested unsolved bugs/improvement ideas is given hereafter:
 
 * Check if there are any open [issues](http://github.com/marrakchino/weatherspeaker/issues) and see whether you can contribute by fixing them.
-
-* Use the functions `get_coordinates_from_ip` and `get_city_country_from_ip` to allow the user to use the program without explicitly specifying a city. See for example how you can extract the city ID number by knowing its name from: http://www.openweathermap.org/help/city_list.txt as the API is not performing well when only providing a city name.
 
 * Add a `-d` option to specify the 'day delay' of the forecast, e.g. invoking `weatherspeaker -d 3` returns the weather forecast of 3 days later.
 
