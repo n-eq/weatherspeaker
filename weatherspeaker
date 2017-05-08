@@ -29,7 +29,7 @@ display_version(){
 get_city_ID(){
 	local city_name="$1"
 	# 'tac |tac' is used to avoid grep error 23 due to non writing completeness (curl) (credits to https://goo.gl/l5g13p)
-	parsed_id=$(curl -sS http://www.openweathermap.org/help/city_list.txt| tac| tac|grep -sm 1 "${city_name}"|sed 's/\s.*$//')
+	parsed_id=$(curl -sS http://www.openweathermap.org/help/city_list.txt| tac| tac|grep -qsm 1 "${city_name}"|sed 's/\s.*$//')
 	echo "${parsed_id}"
 }
 
@@ -100,6 +100,7 @@ init(){
 }
 
 CONFIG_FILE="${HERE}/config/.weatherspeaker.conf"
+day_offset=1
 
 # Command line parsing
 while (( "$#" )); do
@@ -172,13 +173,20 @@ if [[ -f "${CONFIG_FILE}" ]]; then
 	fi
 fi
 
+espeak_data_path="$(${ESPEAK_BIN} --version| sed 's/.*Data at: //g')"
+if [[ ! -f "${espeak_data_path}/voices/female_custom_voice" ]]; then
+	# copy the custom voice file if it's not already in the expected directory
+	cp "${HERE}/res/female_custom_voice" "${espeak_data_path}/voices/female_custom_voice"
+fi
+ESPEAK_BIN="${ESPEAK_BIN} -v female_custom_voice"
+
+
 UNITS=metric # Default:Kelvin, Metric:Celsius, Imperial:Fahrenheit
 WEATHER_URL="http://api.openweathermap.org/data/2.5/forecast?id=${city_id}&APPID=${api_key}&units=${UNITS}"
 
 current_hour_of_the_day=$(date +%H)
-# (The following expression could be a nominee for the most parenthesized expression award).
-# The data fetched from OpenWeatherMap contains weather information
-# for every 3 coming hours. Which means, if you fore example make a request
+# The data fetched from OpenWeatherMap contain weather information
+# for every 3 coming hours. Which means, if you for example make a request
 # at 7pm, you'll get weather data for 21:00, 00:00, 03:00, 06:00, ... and so on
 # for approximately 5 days (35 entries). Every day is therefore divided into
 # 8 intervals of 3 hours (0-3-6-9-12-15-17-18-21-24).
@@ -188,13 +196,6 @@ if [[ "${current_hour_of_the_day}" -ge 12 ]]; then
 else
 	afternoon=1
 fi
-
-espeak_data_path="$(${ESPEAK_BIN} --version| sed 's/.*Data at: //g')"
-if [[ ! -f "${espeak_data_path}/voices/female_custom_voice" ]]; then
-	# copy the custom voice file if it's not already in the expected directory
-	cp "${HERE}/res/female_custom_voice" "${espeak_data_path}/voices/female_custom_voice"
-fi
-ESPEAK_BIN="${ESPEAK_BIN} -v female_custom_voice"
 
 weather_forecast_script=""
 if [[ "${afternoon}" -gt 0 ]]; then
@@ -242,23 +243,26 @@ temperaturify_description(){
 }
 
 # Fetch weather from openweathermap
-# $1 day offset: 0 means today, 1 tomorrow... etc
-# TODO: factorize the calls to curl hereafter
 curl_weather(){
 	day_offset="${day_interval}"
 # 	day_offset="$1"
-	weather_main_description=$(curl -s "${WEATHER_URL}"|
+	
+	curled_data=$(curl -s "${WEATHER_URL}")
+
+	weather_main_description=$(echo "${curled_data}"|
 	jq ".list[((11 - ${day_offset}))]| .weather[] .main")
 	
-	weather_full_description=$(curl -s "${WEATHER_URL}"|
+	# Unused
+	weather_full_description=$(echo "${curled_data}"|
 	jq ".list[((11 - ${day_offset}))]| .weather[] .description")
 	
-	weather_code=$(curl -s "${WEATHER_URL}"| jq '.cod')
+	# Unused
+	weather_code=$(echo "${curled_data}"| jq '.cod')
 
-	weather_morning_temp=$(curl -s "${WEATHER_URL}"|
+	weather_morning_temp=$(echo "${curled_data}"|
 	jq ".list[((11 - ${day_offset}))]| .main.temp")
 
-	weather_afternoon_temp=$(curl -s "${WEATHER_URL}"|
+	weather_afternoon_temp=$(echo "${curled_data}"|
 	jq ".list[((11 - ${day_offset} + 2))]| .main.temp")
 }
 
