@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -e
-VERSION="1.1.2"
+VERSION="1.2.0"
 HERE=$(cd "$(dirname "$0")" && pwd)
 
 ESPEAK_BIN=espeak
@@ -8,7 +8,7 @@ ESPEAK_BIN=espeak
 display_usage(){
 	echo "weatherspeaker - Command line weather forecast speaker"
 	echo "Options:"
-	# not yet supported
+	echo "	  [--days | -d] <nb_of_days>         Return weather forecast for the day (tomorrow + <nb_of_days>), default: 1."	 	     	
 	echo "    [--config | -c] <path>             Use a custom configuration file located in <path>." 
 	echo "    [--trace | --verbose]              Activate tracing."
 	echo "    [--help | -h]                      Show this help and exit."
@@ -155,6 +155,11 @@ while (( "$#" )); do
 			shift 2 || break
 			;;
 
+		--days| -d)
+			day_offset="$2"
+			shift 2 || break
+			;;
+
 		*)
 			shift 1 || break
 			;;
@@ -199,18 +204,15 @@ current_hour_of_the_day=$(date +%H)
 # for approximately 5 days (35 entries). Every day is therefore divided into
 # 8 intervals of 3 hours (0-3-6-9-12-15-17-18-21-24).
 day_interval=$(((((((${current_hour_of_the_day}) * 7)) / 24)) + 2))
-if [[ "${current_hour_of_the_day}" -ge 12 ]]; then
-	afternoon=0
-else
-	afternoon=1
-fi
+desired_date=$(date -d "+${day_offset} days" +%Y-%m-%d)
 
 weather_forecast_script=""
-if [[ "${afternoon}" -gt 0 ]]; then
-	weather_forecast_script="This afternoon, the weather will be "
+if [[ "${day_offset}" -eq 1 ]]; then
+	weather_forecast_script="Tomorrow, "
 else 
-	weather_forecast_script="Tomorrow, the weather will be "
+	weather_forecast_script="In ${day_offset} days, "
 fi
+weather_forecast_script="${weather_forecast_script}the weather will be "
 
 # This function adds an adjective succinctly describing the weather
 # it's possible to use if/else on the resulting code id 
@@ -247,34 +249,28 @@ adjectify_description(){
 }
 
 temperaturify_description(){
-	weather_forecast_script="${weather_forecast_script} Temperatures will range from ${weather_morning_temp} degrees in the morning to ${weather_afternoon_temp} degrees in the afternoon."
+	weather_forecast_script="${weather_forecast_script} Temperatures will range from ${weather_min_temp} to ${weather_max_temp} degrees."
 }
 
 # Fetch weather from openweathermap
 curl_weather(){
-	day_offset="${day_interval}"
-# 	day_offset="$1"
-	
 	curled_data=$(curl -s "${WEATHER_URL}")
 
+	desired_date_first_entry=$(echo "${curled_data}"| jq '.list[] .dt_txt'| 
+	grep -nm 1 "${desired_date}"| cut -f1 -d:)
+
+	weather_data_for_desired_date=$(echo "${curled_data}"| 
+	jq ".list[$((desired_date_first_entry - 1)):$((desired_date_first_entry + 7))][]")
+	
 	weather_main_description=$(echo "${curled_data}"|
-	jq ".list[((11 - ${day_offset}))]| .weather[] .main")
-	
-	# Unused
-	weather_full_description=$(echo "${curled_data}"|
-	jq ".list[((11 - ${day_offset}))]| .weather[] .description")
-	
-	# Unused
-	weather_code=$(echo "${curled_data}"| jq '.cod')
+	jq ".list[$((desired_date_first_entry + 1))]| .weather[] .main")
 
-	weather_morning_temp=$(echo "${curled_data}"|
-	jq ".list[((11 - ${day_offset}))]| .main.temp")
+	weather_min_temp=$(find_min_temp $(echo "${weather_data_for_desired_date}"| jq ".main .temp"))
+	weather_max_temp=$(find_max_temp $(echo "${weather_data_for_desired_date}"| jq ".main .temp"))
 
-	weather_afternoon_temp=$(echo "${curled_data}"|
-	jq ".list[((11 - ${day_offset} + 2))]| .main.temp")
 }
 
-curl_weather 1
+curl_weather
 adjectify_description
 temperaturify_description
 
