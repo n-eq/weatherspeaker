@@ -24,12 +24,20 @@ display_version(){
 	exit 0
 }
 
+find_min_temp(){
+	for temp in "$@"; do echo "$temp"; done| sort -n| head -n 1
+}
+
+find_max_temp(){
+	for temp in "$@"; do echo "$temp"; done| sort -nr| head -n 1
+}
+
 # returns the city ID based on its name from the official city list
 # $1: city name
 get_city_ID(){
 	local city_name="$1"
 	# 'tac |tac' is used to avoid grep error 23 due to non writing completeness (curl) (credits to https://goo.gl/l5g13p)
-	parsed_id=$(curl -sS http://www.openweathermap.org/help/city_list.txt| tac| tac|grep -qsm 1 "${city_name}"|sed 's/\s.*$//')
+	parsed_id=$(curl -sS http://www.openweathermap.org/help/city_list.txt| tac| tac|grep -wsm 1 "${city_name}"|sed 's/\s.*$//')
 	echo "${parsed_id}"
 }
 
