@@ -1,8 +1,8 @@
 # weatherspeaker
-[![version](https://img.shields.io/badge/version-v1.1.2-red.svg)](https://github.com/marrakchino/weatherspeaker/releases)
+[![version](https://img.shields.io/badge/version-v1.2.0-red.svg)](https://github.com/marrakchino/weatherspeaker/releases)
 [![license](http://img.shields.io/badge/license-mit-blue.svg)](https://opensource.org/licenses/MIT)
 
-**weatherspeaker** | a command-line weather forecast speaker. It allows the user to hear the weather forecast of a particular location for a particular date. [Click here to hear a sample output of the program](https://clyp.it/0lsa5ubq)
+**weatherspeaker** | a command-line weather forecast speaker. It allows the user to hear the weather forecast of a particular location for a particular date.
 
 
 ## Dependencies
@@ -66,6 +66,7 @@ Otherwise, you may (will) have to export these environment variables (adding the
 $ weatherspeaker --help
 weatherspeaker - Command line weather forecast speaker
 Options:
+    [--days | -d] <nb_of_days>         Return weather forecast for the day (tomorrow + <nb_of_days>), default: 1.
     [--config-file | -c] <path>        Use a custom configuration file located in <path>.
     [--trace | --verbose]              Activate tracing.
     [--help | -h]                      Show this help and exit.
@@ -91,15 +92,13 @@ A non-exhaustive list of suggested unsolved bugs/improvement ideas is given here
 
 * Check if there are any open [issues](http://github.com/marrakchino/weatherspeaker/issues) and see whether you can contribute by fixing them.
 
-* Add a `-d` option to specify the 'day delay' of the forecast, e.g. invoking `weatherspeaker -d 3` returns the weather forecast of 3 days later.
-
 * Improve the weather forecast script.
 
-* Eventually extend the project to other platforms (Windows, MacOS, ...).
-
-* Add new languages for the forecast.
+* Add new languages for the forecast based on the system language (see `locale`), or on the region (IP Address).
 
 * Write a Makefile containing, among other stuff, an 'install' rule.
+
+* Eventually extend the project to other platforms (Windows, MacOS).
 
 # Licence
 

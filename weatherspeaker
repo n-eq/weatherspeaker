@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -e
-VERSION="1.1.2"
+VERSION="1.2.0"
 HERE=$(cd "$(dirname "$0")" && pwd)
 
 ESPEAK_BIN=espeak
@@ -8,7 +8,7 @@ ESPEAK_BIN=espeak
 display_usage(){
 	echo "weatherspeaker - Command line weather forecast speaker"
 	echo "Options:"
-	# not yet supported
+	echo "	  [--days | -d] <nb_of_days>         Return weather forecast for the day (tomorrow + <nb_of_days>), default: 1."	 	     	
 	echo "    [--config | -c] <path>             Use a custom configuration file located in <path>." 
 	echo "    [--trace | --verbose]              Activate tracing."
 	echo "    [--help | -h]                      Show this help and exit."
@@ -24,12 +24,20 @@ display_version(){
 	exit 0
 }
 
+find_min_temp(){
+	for temp in "$@"; do echo "$temp"; done| sort -n| head -n 1
+}
+
+find_max_temp(){
+	for temp in "$@"; do echo "$temp"; done| sort -nr| head -n 1
+}
+
 # returns the city ID based on its name from the official city list
 # $1: city name
 get_city_ID(){
 	local city_name="$1"
 	# 'tac |tac' is used to avoid grep error 23 due to non writing completeness (curl) (credits to https://goo.gl/l5g13p)
-	parsed_id=$(curl -sS http://www.openweathermap.org/help/city_list.txt| tac| tac|grep -sm 1 "${city_name}"|sed 's/\s.*$//')
+	parsed_id=$(curl -sS http://www.openweathermap.org/help/city_list.txt| tac| tac|grep -wsm 1 "${city_name}"|sed 's/\s.*$//')
 	echo "${parsed_id}"
 }
 
@@ -100,6 +108,7 @@ init(){
 }
 
 CONFIG_FILE="${HERE}/config/.weatherspeaker.conf"
+day_offset=1
 
 # Command line parsing
 while (( "$#" )); do
@@ -146,6 +155,11 @@ while (( "$#" )); do
 			shift 2 || break
 			;;
 
+		--days| -d)
+			day_offset="$2"
+			shift 2 || break
+			;;
+
 		*)
 			shift 1 || break
 			;;
@@ -172,23 +186,6 @@ if [[ -f "${CONFIG_FILE}" ]]; then
 	fi
 fi
 
-UNITS=metric # Default:Kelvin, Metric:Celsius, Imperial:Fahrenheit
-WEATHER_URL="http://api.openweathermap.org/data/2.5/forecast?id=${city_id}&APPID=${api_key}&units=${UNITS}"
-
-current_hour_of_the_day=$(date +%H)
-# (The following expression could be a nominee for the most parenthesized expression award).
-# The data fetched from OpenWeatherMap contains weather information
-# for every 3 coming hours. Which means, if you fore example make a request
-# at 7pm, you'll get weather data for 21:00, 00:00, 03:00, 06:00, ... and so on
-# for approximately 5 days (35 entries). Every day is therefore divided into
-# 8 intervals of 3 hours (0-3-6-9-12-15-17-18-21-24).
-day_interval=$(((((((${current_hour_of_the_day}) * 7)) / 24)) + 2))
-if [[ "${current_hour_of_the_day}" -ge 12 ]]; then
-	afternoon=0
-else
-	afternoon=1
-fi
-
 espeak_data_path="$(${ESPEAK_BIN} --version| sed 's/.*Data at: //g')"
 if [[ ! -f "${espeak_data_path}/voices/female_custom_voice" ]]; then
 	# copy the custom voice file if it's not already in the expected directory
@@ -196,12 +193,26 @@ if [[ ! -f "${espeak_data_path}/voices/female_custom_voice" ]]; then
 fi
 ESPEAK_BIN="${ESPEAK_BIN} -v female_custom_voice"
 
+
+UNITS=metric # Default:Kelvin, Metric:Celsius, Imperial:Fahrenheit
+WEATHER_URL="http://api.openweathermap.org/data/2.5/forecast?id=${city_id}&APPID=${api_key}&units=${UNITS}"
+
+current_hour_of_the_day=$(date +%H)
+# The data fetched from OpenWeatherMap contain weather information
+# for every 3 coming hours. Which means, if you for example make a request
+# at 7pm, you'll get weather data for 21:00, 00:00, 03:00, 06:00, ... and so on
+# for approximately 5 days (35 entries). Every day is therefore divided into
+# 8 intervals of 3 hours (0-3-6-9-12-15-17-18-21-24).
+day_interval=$(((((((${current_hour_of_the_day}) * 7)) / 24)) + 2))
+desired_date=$(date -d "+${day_offset} days" +%Y-%m-%d)
+
 weather_forecast_script=""
-if [[ "${afternoon}" -gt 0 ]]; then
-	weather_forecast_script="This afternoon, the weather will be "
+if [[ "${day_offset}" -eq 1 ]]; then
+	weather_forecast_script="Tomorrow, "
 else 
-	weather_forecast_script="Tomorrow, the weather will be "
+	weather_forecast_script="In ${day_offset} days, "
 fi
+weather_forecast_script="${weather_forecast_script}the weather will be "
 
 # This function adds an adjective succinctly describing the weather
 # it's possible to use if/else on the resulting code id 
@@ -238,31 +249,28 @@ adjectify_description(){
 }
 
 temperaturify_description(){
-	weather_forecast_script="${weather_forecast_script} Temperatures will range from ${weather_morning_temp} degrees in the morning to ${weather_afternoon_temp} degrees in the afternoon."
+	weather_forecast_script="${weather_forecast_script} Temperatures will range from ${weather_min_temp} to ${weather_max_temp} degrees."
 }
 
 # Fetch weather from openweathermap
-# $1 day offset: 0 means today, 1 tomorrow... etc
-# TODO: factorize the calls to curl hereafter
 curl_weather(){
-	day_offset="${day_interval}"
-# 	day_offset="$1"
-	weather_main_description=$(curl -s "${WEATHER_URL}"|
-	jq ".list[((11 - ${day_offset}))]| .weather[] .main")
-	
-	weather_full_description=$(curl -s "${WEATHER_URL}"|
-	jq ".list[((11 - ${day_offset}))]| .weather[] .description")
-	
-	weather_code=$(curl -s "${WEATHER_URL}"| jq '.cod')
+	curled_data=$(curl -s "${WEATHER_URL}")
 
-	weather_morning_temp=$(curl -s "${WEATHER_URL}"|
-	jq ".list[((11 - ${day_offset}))]| .main.temp")
+	desired_date_first_entry=$(echo "${curled_data}"| jq '.list[] .dt_txt'| 
+	grep -nm 1 "${desired_date}"| cut -f1 -d:)
 
-	weather_afternoon_temp=$(curl -s "${WEATHER_URL}"|
-	jq ".list[((11 - ${day_offset} + 2))]| .main.temp")
+	weather_data_for_desired_date=$(echo "${curled_data}"| 
+	jq ".list[$((desired_date_first_entry - 1)):$((desired_date_first_entry + 7))][]")
+	
+	weather_main_description=$(echo "${curled_data}"|
+	jq ".list[$((desired_date_first_entry + 1))]| .weather[] .main")
+
+	weather_min_temp=$(find_min_temp $(echo "${weather_data_for_desired_date}"| jq ".main .temp"))
+	weather_max_temp=$(find_max_temp $(echo "${weather_data_for_desired_date}"| jq ".main .temp"))
+
 }
 
-curl_weather 1
+curl_weather
 adjectify_description
 temperaturify_description
 
