@@ -2,6 +2,7 @@
 set -e
 VERSION="1.2.0"
 HERE=$(cd "$(dirname "$0")" && pwd)
+
 ESPEAK_BIN=espeak
 
 display_usage(){
