@@ -133,7 +133,7 @@ while (( "$#" )); do
 				api_key=${OPENWEATHERMAP_APIKEY}
 			fi
 
-			if [[ -z "${api_key}" || "${api_key}" == "${OPENWEATHERMAP_APIKEY}" ]]; then 
+			if [[ -z "${api_key}" || "${api_key}" == "${OPENWEATHERMAP_APIKEY}" ]]; then 
 				read -r -e -p "Enter your API key: " api_key
 			fi
 
@@ -143,7 +143,7 @@ while (( "$#" )); do
 				city_id="${WTSPEAK_DEFAULT_CITY_ID}"
 			fi
 
-			if [[ -z "${city_id}" || "${city_id}" == "${WTSPEAK_DEFAULT_CITY_ID}" ]]; then 
+			if [[ -z "${city_id}" || "${city_id}" == "${WTSPEAK_DEFAULT_CITY_ID}" ]]; then 
 				read -r -e -p "Enter your city ID: " city_id
 			fi
 			init
@@ -152,16 +152,16 @@ while (( "$#" )); do
 
 		--config| -c)
 			CONFIG_FILE="$2"
-			shift 2 || break
+			shift 2 || break
 			;;
 
 		--days| -d)
 			day_offset="$2"
-			shift 2 || break
+			shift 2 || break
 			;;
 
 		*)
-			shift 1 || break
+			shift 1 || break
 			;;
 	esac
 done
@@ -197,7 +197,7 @@ ESPEAK_BIN="${ESPEAK_BIN} -v female_custom_voice"
 UNITS=metric # Default:Kelvin, Metric:Celsius, Imperial:Fahrenheit
 WEATHER_URL="http://api.openweathermap.org/data/2.5/forecast?id=${city_id}&APPID=${api_key}&units=${UNITS}"
 
-current_hour_of_the_day=$(date +%H)
+# current_hour_of_the_day=$(date +%H)
 # The data fetched from OpenWeatherMap contain weather information
 # for every 3 coming hours. Which means, if you for example make a request
 # at 7pm, you'll get weather data for 21:00, 00:00, 03:00, 06:00, ... and so on
