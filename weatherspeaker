@@ -61,10 +61,10 @@ replace_conf(){
 
 init(){
 	if grep -s -q "key" "${CONFIG_FILE}"; then
-		read -p "API Key already exists in ${CONFIG_FILE}, overwrite it? [y]es, [n]o " action
+		read -r -p "API Key already exists in ${CONFIG_FILE}, overwrite it? [y]es, [n]o " action
 		case "${action}" in
 			y)
-				read -p "New API key: " new_api_key
+				read -r -p "New API key: " new_api_key
 				replace_conf "key" "${new_api_key}"
 				echo "[API KEY] Overwrote API key in ${CONFIG_FILE}"
 				;;
@@ -84,10 +84,10 @@ init(){
 	fi
 
 	if grep -s -q "id" "${CONFIG_FILE}"; then
-		read -p "Default city ID already exists in ${CONFIG_FILE}, overwrite it? [y]es, [n]o " action
+		read -r -p "Default city ID already exists in ${CONFIG_FILE}, overwrite it? [y]es, [n]o " action
 		case "${action}" in
 			y)
-				read -p "New city ID: " new_city_id
+				read -r -p "New city ID: " new_city_id
 				replace_conf "id" "${new_city_id}"
 				echo "[City ID] Overwrote city ID in ${CONFIG_FILE}"
 				;;
@@ -134,7 +134,7 @@ while (( "$#" )); do
 			fi
 
 			if [[ -z "${api_key}" || "${api_key}" == "${OPENWEATHERMAP_APIKEY}" ]]; then 
-				read -e -p "Enter your API key: " api_key
+				read -r -e -p "Enter your API key: " api_key
 			fi
 
 			if [[ -f "${CONFIG_FILE}" ]]; then
@@ -144,7 +144,7 @@ while (( "$#" )); do
 			fi
 
 			if [[ -z "${city_id}" || "${city_id}" == "${WTSPEAK_DEFAULT_CITY_ID}" ]]; then 
-				read -e -p "Enter your city ID: " city_id
+				read -r -e -p "Enter your city ID: " city_id
 			fi
 			init
 			exit $?
@@ -274,6 +274,6 @@ adjectify_description
 temperaturify_description
 
 # Don't speak unless the information has been correctly fetched 
-if [[ "${weather_morning_temp}" != null && "${weather_afternoon_temp}" != null ]]; then
+if [[ "${weather_min_temp}" != null && "${weather_max_temp}" != null ]]; then
 	${ESPEAK_BIN} "${weather_forecast_script}" &
 fi
