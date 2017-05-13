@@ -14,7 +14,7 @@
 
 * **jq** is an opensource lightweight command line JSON processor. You can download it [here](http://stedolan.github.io/jq/download) depending on your Linux distro.
 
-## Getting and using an API key from OpenWeatherMap
+### Getting and using an API key from OpenWeatherMap
 
 1. You need to sign up with a valid username and email: http://home.openweathermap.org/users/sign_up
 
@@ -22,9 +22,9 @@
 The API key might take several minutes before it becomes valid. To test it, check that you get weather information for Marrakesh when visiting this link:
 `http://api.openweathermap.org/data/2.5/forecast/city?id=2542997&APPID=<YOUR_API_KEY_HERE>`
 
-# Configuration
+## Configuration
 
-## Configuration file
+### Configuration file
 
 You can directly store your settings in a dedicated file: `config/.weatherspeaker.conf` (or set the variable `CONFIG_FILE` to another directory of your choice) in the following format:
 
@@ -39,7 +39,7 @@ Ideally, you can provide the two lines. Still, only the API key is required. Ind
 
 However, this solution is not recommended although operational for accuracy reasons.
 
-### Resetting the variables
+#### Resetting the variables
 
 You can overwrite these environment variables (if you happen to change the city or to use a new API key) by invoking `init`:
 
@@ -61,7 +61,7 @@ Otherwise, you may (will) have to export these environment variables (adding the
 
 `export WTSPEAK_DEFAULT_CITY_ID=<DEFAULT_CITY_ID>` 
 
-# Usage 
+## Usage 
 
 ```sh
 $ weatherspeaker --help
@@ -77,16 +77,7 @@ Options:
     Github repository: 		     http://gihthub.com/marrakchino/weatherspeaker
 ```
 
-# Cron
-
-You can `cron` this job to run periodically, e.g.:
-
-```sh
-# Runs weatherspeaker every day at 10 p.m.
-0 22 * * * weatherspeaker >> /path/to/weatherspeaker.log 2>&1
-```
-
-# TODO
+## TODO
 
 All contributions are welcome. The project is still relatively small, therefore feel free to fork the repository and send pull requests.
 A non-exhaustive list of suggested unsolved bugs/improvement ideas is given hereafter:
@@ -105,7 +96,7 @@ A non-exhaustive list of suggested unsolved bugs/improvement ideas is given here
 
 * Eventually extend the project to other platforms (Windows, MacOS).
 
-# Licence
+## Licence
 
 **weatherspeaker** is released under the MIT licence, see `LICENCE` file for more details.
 
