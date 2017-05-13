@@ -267,7 +267,6 @@ curl_weather(){
 
 	weather_min_temp=$(find_min_temp $(echo "${weather_data_for_desired_date}"| jq ".main .temp"))
 	weather_max_temp=$(find_max_temp $(echo "${weather_data_for_desired_date}"| jq ".main .temp"))
-
 }
 
 curl_weather
