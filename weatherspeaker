@@ -203,7 +203,7 @@ current_hour_of_the_day=$(date +%H)
 # at 7pm, you'll get weather data for 21:00, 00:00, 03:00, 06:00, ... and so on
 # for approximately 5 days (35 entries). Every day is therefore divided into
 # 8 intervals of 3 hours (0-3-6-9-12-15-17-18-21-24).
-day_interval=$(((((((${current_hour_of_the_day}) * 7)) / 24)) + 2))
+# day_interval=$(((((((${current_hour_of_the_day}) * 7)) / 24)) + 2))
 desired_date=$(date -d "+${day_offset} days" +%Y-%m-%d)
 
 weather_forecast_script=""
