@@ -94,6 +94,10 @@ A non-exhaustive list of suggested unsolved bugs/improvement ideas is given here
 
 * Improve the weather forecast script.
 
+  * Add the city name to the script.
+
+  * Add a `--city-name` option to get weather info for a specific city.
+
 * Add new languages for the forecast based on the system language (see `locale`), or on the region (IP Address).
 
 * Write a Makefile containing, among other stuff, an 'install' rule.
