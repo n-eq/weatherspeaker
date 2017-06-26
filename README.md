@@ -57,9 +57,10 @@ New city ID: 1234554321
 
 Otherwise, you may (will) have to export these environment variables (adding them to your `~/.bashrc` file for example):
 
-`export OPENWEATHERMAP_APIKEY=<YOUR_API_KEY>`
-
-`export WTSPEAK_DEFAULT_CITY_ID=<DEFAULT_CITY_ID>` 
+```sh
+export OPENWEATHERMAP_APIKEY=<YOUR_API_KEY>
+export WTSPEAK_DEFAULT_CITY_ID=<DEFAULT_CITY_ID>
+```
 
 ## Usage 
 
